@@ -54,6 +54,6 @@ Only the fixed presence endpoint is added to connect-src. Requests omit credenti
 
 This is a public approximate counter; modified clients can imitate heartbeats. There is no embedded server secret or claim of tamper-proof installation verification.
 
-GPL-3.0-or-later. See LICENSE and THIRD_PARTY_NOTICES.md. Original copyright notices remain. Solcord is not affiliated with Discord Inc. or the Solana Foundation. Supplied media and logos are included as provided.
+ See LICENSE and THIRD_PARTY_NOTICES.md. Original copyright notices remain. Solcord is not affiliated with Discord Inc. or the Solana Foundation. Supplied media and logos are included as provided.
 
 Release metadata describes the actual locally built installer and payload hashes, without claiming an online update signature. Automatic background updates remain disabled in this package.
