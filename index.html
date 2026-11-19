@@ -29,7 +29,7 @@ header{position:sticky;top:0;z-index:20;border-bottom:1px solid var(--line);back
 <section class="hero" aria-labelledby="hero-title">
 <div><p class="eyebrow">A Discord mod for Windows</p><h1 id="hero-title">Solcord for <br>your desktop.</h1>
 <p class="hero-copy">Plugins, themes, and useful extras for the Discord you already use. Set it up how you like it.</p>
-<div class="actions"><a class="button primary download-link" href="https://avyxl.github.io/SolCord/downloads/SolcordInstaller-2.1.0.zip" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg>Download for Windows</a><a class="button" href="https://github.com/avyxl/SolCord" target="_blank" rel="noopener noreferrer">View source</a></div><p class="platform-note">For the Discord desktop app. Made by <a href="https://avyxl.github.io/portfolio/" target="_blank" rel="noopener noreferrer">avyxl</a>.</p>
+<div class="actions"><a class="button primary download-link" href="https://drive.google.com/uc?export=download&amp;id=1m1FRdEJuwjuWSr1HN39ClJjnqNvONIlx" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg>Download for Windows</a><a class="button" href="https://github.com/avyxl/SolCord" target="_blank" rel="noopener noreferrer">View source</a></div><p class="platform-note">For the Discord desktop app. Made by <a href="https://avyxl.github.io/portfolio/" target="_blank" rel="noopener noreferrer">avyxl</a>.</p>
 </div>
 <div>
 <div class="preview" aria-label="Interactive preview of Solcord settings">
@@ -78,7 +78,7 @@ header{position:sticky;top:0;z-index:20;border-bottom:1px solid var(--line);back
 </div>
 </section>
 <section class="install" id="install" aria-labelledby="install-title">
-<div><h2 id="install-title">Up and running<br>in a few steps.</h2><p>The installer adds Solcord to your existing Discord desktop app.</p><a class="button primary download-link" href="https://avyxl.github.io/SolCord/downloads/SolcordInstaller-2.1.0.zip" target="_blank" rel="noopener noreferrer">Get the installer</a></div>
+<div><h2 id="install-title">Up and running<br>in a few steps.</h2><p>The installer adds Solcord to your existing Discord desktop app.</p><a class="button primary download-link" href="https://drive.google.com/uc?export=download&amp;id=1m1FRdEJuwjuWSr1HN39ClJjnqNvONIlx" target="_blank" rel="noopener noreferrer">Get the installer</a></div>
 <ol><li><strong>Download and extract</strong><span>Download the installer package and extract it to a folder.</span></li><li><strong>Close Discord and install</strong><span>Quit Discord from the system tray, open SolcordInstaller.exe, and select your Discord installation.</span></li><li><strong>Open Discord</strong><span>Find Solcord in settings to choose your theme and plugins.</span></li></ol>
 </section>
 <section class="section faq" aria-labelledby="faq-title"><h2 id="faq-title">Good to know.</h2><div>
@@ -93,10 +93,10 @@ header{position:sticky;top:0;z-index:20;border-bottom:1px solid var(--line);back
 <div id="toast" class="toast" role="status" hidden></div>
 <script>
 /* Site configuration. Use only a public backend URL here; never API keys.
-   Publish the included downloads folder alongside this HTML. */
+   Download buttons use the public URL configured below. */
 const SOLCORD_CONFIG = Object.freeze({
   statsBaseUrl: "https://solcord-presence.adammohamedali01.workers.dev",
-  downloadUrl: "https://avyxl.github.io/SolCord/downloads/SolcordInstaller-2.1.0.zip"
+  downloadUrl: "https://drive.google.com/uc?export=download&id=1m1FRdEJuwjuWSr1HN39ClJjnqNvONIlx"
 });
 document.querySelectorAll(".download-link").forEach(function(link) {
   link.href = SOLCORD_CONFIG.downloadUrl;
