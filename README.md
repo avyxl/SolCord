@@ -28,7 +28,7 @@ The count includes participating open installations, including idle ones. It is 
 ## Website
 
 Website/index.html in the release ZIP is configured for the live Worker:
-https://solcord-presence.adammohamedali01.workers.dev
+************************************************************
 
 The website only reads aggregate stats; visiting it does not count as an installation. Use the separate website package to publish the HTML and its downloads folder together.
 
