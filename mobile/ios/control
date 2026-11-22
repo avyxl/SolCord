@@ -1,0 +1,11 @@
+Package: com.solcord.tweak
+Name: Solcord
+Version: 1.0.9
+Architecture: iphoneos-arm
+Description: Solcord for Discord on iOS: plugins, themes and privacy
+Maintainer: avyxl
+Author: rootpoi and contributors, based on RainTweak by cocobo1 and Bwlok
+Icon: <https://raw.githubusercontent.com/avyxl/SolCord/next/bundle/src/assets/icons/solcord.png>
+Section: Tweaks
+Depends: mobilesubstrate (>= 0.9.5000)
+Conflicts: app.enmity, mod.vendetta, app.unbound, com.cloudysnow.btloader, app.pyoncord, cocobo1.kettu.tweak, dev.raincord.tweak

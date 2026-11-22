@@ -1,0 +1,267 @@
+/*
+ * Solcord for Android
+ * Copyright (c) 2026 rootpoi and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * Backs up Solcord's settings to a file the user keeps, and restores them, like Solcord PC's settings export.
+ *
+ * A backup only carries what is safe to take from a file someone else made: the language, which plugins are on and
+ * their settings, what the user made with plugins (profiles, notes, collections...) and the addresses of their
+ * themes and fonts. Developer settings stay out (DevTools on start or the eval command would let whoever made the file
+ * run code in the app), and so do plugins from repositories, which are code, and the logs plugins keep.
+ */
+
+import { LANGUAGES, t } from "@core/i18n";
+import { filePathFixer } from "@core/vendetta/storage";
+import { fonts, installFont, selectFont } from "@lib/addons/fonts";
+import { corePluginInstances, pluginSettings } from "@lib/addons/plugins";
+import { fetchTheme, getCurrentTheme, selectTheme, themes } from "@lib/addons/themes";
+import { writeDocument } from "@lib/api/native/fs";
+import { NativeFileModule } from "@lib/api/native/modules";
+import { settings } from "@lib/api/settings";
+import { awaitStorage, flushStorages } from "@lib/api/storage";
+import { isSafeObject } from "@lib/utils/safeJson";
+import { manifest } from "@plugins/manifest";
+import { version } from "bunny-build-info";
+
+const FORMAT = "solcord-settings";
+const VERSION = 1;
+/** Larger than any backup Solcord makes; a bigger file isn't one */
+export const MAX_BACKUP_SIZE = 8 * 1024 * 1024;
+
+/** The general settings a backup carries */
+const SETTINGS_KEYS = ["language", "enableDiscordDeveloperSettings"] as const;
+
+/**
+ * Plugin settings a backup never carries, and that restoring one leaves as they are: secrets (API keys, passwords),
+ * which a shared backup would give away, and the address ChatGPT sends its key to, which a backup someone else made
+ * could point elsewhere
+ */
+const PRIVATE_SETTING = /^(api_?key|password|token|secret|base_?url)$/i;
+
+/** Also those a plugin marks sensitive, as on Solcord PC */
+const isPrivate = (pluginId: string, key: string) => PRIVATE_SETTING.test(key) || !!manifest.find(p => p.id === pluginId)?.sensitive?.includes(key);
+
+const withoutPrivate = (pluginId: string, store: JsonObject): JsonObject =>
+    Object.fromEntries(Object.entries(store).filter(([key]) => !isPrivate(pluginId, key)));
+const onlyPrivate = (pluginId: string, store: JsonObject | undefined): JsonObject =>
+    Object.fromEntries(Object.entries(store ?? {}).filter(([key]) => isPrivate(pluginId, key)));
+
+/** Storages of what the user made with plugins; the logs and caches plugins keep for themselves aren't in backups */
+const DATA_STORES = [
+    "SOLCORD_BOOKMARKS", "SOLCORD_CHANNEL_NOTES", "SOLCORD_CUSTOM_PROFILE", "SOLCORD_CUSTOM_SOUNDS",
+    "SOLCORD_FAKE_CONNECTIONS", "SOLCORD_FAKE_DMS", "SOLCORD_FAVORITE_MEDIA", "SOLCORD_FRIEND_NICKNAMES",
+    "SOLCORD_FRIEND_TAGS", "SOLCORD_GIF_COLLECTIONS", "SOLCORD_MESSAGE_TAGS", "SOLCORD_MESSAGE_VAULT", "SOLCORD_PINS",
+    "SOLCORD_PROFILE_SETS", "SOLCORD_STATUS_PRESETS", "SOLCORD_TEXT_REPLACE_RULES",
+];
+
+type Json = null | boolean | number | string | Json[] | { [key: string]: Json; };
+type JsonObject = { [key: string]: Json; };
+
+export interface Backup {
+    format: typeof FORMAT;
+    version: number;
+    /** The Solcord version that made it */
+    solcord: string;
+    createdAt: string;
+    settings: Partial<Record<typeof SETTINGS_KEYS[number], Json>>;
+    /** Built-in plugins by ID, and whether each is on */
+    plugins: Record<string, boolean>;
+    /** Solcord plugins' settings by plugin ID */
+    pluginSettings: Record<string, JsonObject>;
+    /** What the user made with plugins, by storage */
+    data: Record<string, JsonObject>;
+    themes: { urls: string[]; selected: string | null; };
+    fonts: { urls: string[]; selected: string | null; };
+}
+
+const storePath = (name: string) => `vd_mmkv/${name}`;
+
+async function readStore(name: string): Promise<JsonObject | undefined> {
+    const path = `${NativeFileModule.getConstants().DocumentsDirPath}/${storePath(name)}`;
+    if (!await NativeFileModule.fileExists(path)) return undefined;
+    try {
+        const data = JSON.parse(await NativeFileModule.readFile(path, "utf8"));
+        return isPlainObject(data) ? data : undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+async function writeStore(name: string, data: JsonObject) {
+    const text = JSON.stringify(data);
+    // Where Solcord's storages write it, which on iOS isn't the same path as where they read it from
+    await writeDocument(filePathFixer(storePath(name)), text);
+    // And its last good copy, which would otherwise bring back what was there before the restore if the file got damaged
+    await writeDocument(filePathFixer(`${storePath(name)}.bak`), text).catch(() => { });
+}
+
+function isPlainObject(value: unknown): value is JsonObject {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+
+// Not with URL, which React Native only partly implements
+const isHttps = (url: unknown): url is string => typeof url === "string" && /^https:\/\/\S+$/i.test(url);
+
+/** A picture a profile may point at: one Discord serves, or one picked on this phone */
+const PROFILE_PICTURE = /^(?:data:image\/|https:\/\/(?:cdn\.discordapp\.com|media\.discordapp\.net)\/)/i;
+
+/**
+ * Drops the avatar and banner of a CustomProfile store that don't point at Discord or at a picture on this phone. A
+ * backup is someone else's file, and your own profile's avatar is loaded from wherever it names: a link to a stranger's
+ * server would tell them your address every time Discord drew your profile
+ */
+function cleanProfilePictures(store: JsonObject): JsonObject {
+    const clean = (profile: unknown): void => {
+        if (!isPlainObject(profile)) return;
+        for (const key of ["avatar", "banner"] as const) {
+            if (typeof profile[key] === "string" && !PROFILE_PICTURE.test(profile[key] as string)) delete profile[key];
+        }
+    };
+    const copy = JSON.parse(JSON.stringify(store)) as JsonObject;
+    for (const profile of Object.values(isPlainObject(copy.accounts) ? copy.accounts : {})) clean(profile);
+    for (const list of Object.values(isPlainObject(copy.presets) ? copy.presets : {})) {
+        for (const preset of Array.isArray(list) ? list : []) clean(isPlainObject(preset) ? preset.data : undefined);
+    }
+    return copy;
+}
+
+/**
+ * Solcord's settings as the text of a backup file. Without data, only the settings: what the snapshots on the phone
+ * keep, since what people made with plugins can be large and isn't what a bad setting breaks
+ */
+export async function createBackup({ withData = true }: { withData?: boolean; } = {}): Promise<string> {
+    await awaitStorage(pluginSettings);
+
+    const plugins: Record<string, boolean> = {};
+    for (const id of corePluginInstances.keys()) plugins[id] = Boolean(pluginSettings[id]?.enabled);
+
+    const pluginStores: Record<string, JsonObject> = {};
+    await Promise.all(manifest.filter(p => p.hasSettings).map(async p => {
+        const store = await readStore(`SOLCORD_PLUGIN_${p.id}`);
+        const shared = store && withoutPrivate(p.id, store);
+        if (shared && Object.keys(shared).length) pluginStores[p.id] = shared;
+    }));
+
+    const data: Record<string, JsonObject> = {};
+    if (withData) await Promise.all(DATA_STORES.map(async name => {
+        const store = await readStore(name);
+        if (store && Object.keys(store).length) data[name] = store;
+    }));
+
+    const installedFonts = Object.entries(fonts).filter(([name]) => name !== "__selected") as [string, any][];
+    const selectedFont = installedFonts.find(([name]) => name === fonts.__selected)?.[1]?.source;
+
+    const backup: Backup = {
+        format: FORMAT,
+        version: VERSION,
+        solcord: version,
+        createdAt: new Date().toISOString(),
+        settings: Object.fromEntries(SETTINGS_KEYS.filter(k => settings[k] !== undefined).map(k => [k, settings[k] as Json])),
+        plugins,
+        pluginSettings: pluginStores,
+        data,
+        themes: {
+            urls: Object.keys(themes).filter(isHttps),
+            selected: getCurrentTheme()?.id ?? null,
+        },
+        fonts: {
+            urls: installedFonts.map(([, font]) => font?.source).filter(isHttps),
+            selected: isHttps(selectedFont) ? selectedFont : null,
+        },
+    };
+    return JSON.stringify(backup, null, 2);
+}
+
+/** The backup in a file's text, keeping only what Solcord takes from backups; throws, with a message to show, when it isn't one */
+export function parseBackup(text: string): Backup {
+    let parsed: any;
+    try {
+        parsed = JSON.parse(text);
+    } catch {
+        throw new Error(t("This file isn't an Solcord backup"));
+    }
+    if (!isPlainObject(parsed) || parsed.format !== FORMAT || typeof parsed.version !== "number") {
+        throw new Error(t("This file isn't an Solcord backup"));
+    }
+    if (parsed.version > VERSION) throw new Error(t("This backup is from a newer Solcord. Update Solcord, then try again."));
+    if (!isSafeObject(parsed)) throw new Error(t("This backup is damaged and can't be restored"));
+
+    const object = (value: unknown): JsonObject => isPlainObject(value) ? value : {};
+    const raw = object(parsed.settings);
+    const backupSettings: Backup["settings"] = {};
+    if (raw.language === "auto" || LANGUAGES.some(l => l.code === raw.language)) backupSettings.language = raw.language;
+    if (typeof raw.enableDiscordDeveloperSettings === "boolean") backupSettings.enableDiscordDeveloperSettings = raw.enableDiscordDeveloperSettings;
+
+    const plugins = Object.fromEntries(Object.entries(object(parsed.plugins))
+        .filter(([id, on]) => corePluginInstances.has(id) && typeof on === "boolean")) as Record<string, boolean>;
+    const pluginStores = Object.fromEntries(Object.entries(object(parsed.pluginSettings))
+        .filter(([id, store]) => manifest.some(p => p.id === id) && isPlainObject(store))
+        .map(([id, store]) => [id, withoutPrivate(id, store as JsonObject)])) as Record<string, JsonObject>;
+    const data = Object.fromEntries(Object.entries(object(parsed.data))
+        .filter(([name, store]) => DATA_STORES.includes(name) && isPlainObject(store))) as Record<string, JsonObject>;
+
+    const addons = (value: unknown): Backup["themes"] => {
+        const list = object(value);
+        const urls = [...new Set(Array.isArray(list.urls) ? list.urls.filter(isHttps) : [])].slice(0, 200);
+        return { urls, selected: typeof list.selected === "string" && urls.includes(list.selected) ? list.selected : null };
+    };
+
+    return {
+        format: FORMAT,
+        version: parsed.version,
+        solcord: typeof parsed.solcord === "string" ? parsed.solcord : "?",
+        createdAt: typeof parsed.createdAt === "string" ? parsed.createdAt : "",
+        settings: backupSettings,
+        plugins,
+        pluginSettings: pluginStores,
+        data,
+        themes: addons(parsed.themes),
+        fonts: addons(parsed.fonts),
+    };
+}
+
+/**
+ * Replaces Solcord's settings with a backup's. Discord should reload right after: plugins that are running hold their
+ * settings in memory until then. Resolves to how many themes and fonts couldn't be installed again.
+ */
+export async function restoreBackup(backup: Backup): Promise<number> {
+    await awaitStorage(pluginSettings);
+
+    for (const key of SETTINGS_KEYS) {
+        if (key in backup.settings) (settings as any)[key] = backup.settings[key];
+    }
+    for (const [id, enabled] of Object.entries(backup.plugins)) {
+        pluginSettings[id] = { ...pluginSettings[id], enabled };
+    }
+
+    await Promise.all([
+        ...Object.entries(backup.pluginSettings).map(async ([id, store]) => {
+            const name = `SOLCORD_PLUGIN_${id}`;
+            await writeStore(name, { ...store, ...onlyPrivate(id, await readStore(name)) });
+        }),
+        ...Object.entries(backup.data).map(([name, store]) =>
+            writeStore(name, name === "SOLCORD_CUSTOM_PROFILE" ? cleanProfilePictures(store) : store)),
+    ]);
+    // A profile that came with a backup is whoever made the file's: it isn't posted for everyone to see until it's
+    // saved again in the editor on this phone, which is what lets CustomProfile share it
+    if ("SOLCORD_CUSTOM_PROFILE" in backup.data) await writeStore("SOLCORD_CUSTOM_PROFILE_PUBLISHED", { accounts: {} });
+
+    const installedFonts = Object.entries(fonts).filter(([name]) => name !== "__selected") as [string, any][];
+    const installed = await Promise.allSettled([
+        ...backup.themes.urls.map(url => fetchTheme(url, url === backup.themes.selected)),
+        ...backup.fonts.urls.map(async url => {
+            // A font already here stays as it is, only selected if the backup had it selected
+            const name = installedFonts.find(([, font]) => font?.source === url)?.[0];
+            if (name === undefined) return installFont(url, url === backup.fonts.selected);
+            if (url === backup.fonts.selected) await selectFont(name);
+        }),
+    ]);
+    if (backup.themes.selected === null) await selectTheme(null);
+    if (backup.fonts.selected === null && fonts.__selected) await selectFont(null);
+
+    // The plugin manager saves which plugins are on a moment after a change; the reload must not come first
+    await flushStorages();
+    return installed.filter(r => r.status === "rejected").length;
+}

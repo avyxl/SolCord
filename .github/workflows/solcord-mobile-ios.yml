@@ -1,0 +1,229 @@
+"name": "Build Solcord for iPhone"
+"on":
+  "push":
+    "branches": ["solcord/mobile-builds-*"]
+  "workflow_dispatch":
+    "inputs":
+      "source_dir":
+        "description": "Mobile source folder in this repository"
+        "required": true
+        "default": "mobile"
+        "type": "string"
+      "ipa_url":
+        "description": "Optional direct decrypted Discord IPA URL (leave blank for the pinned upstream base)"
+        "required": false
+        "type": "string"
+"permissions":
+  "contents": "read"
+"jobs":
+  "bundle":
+    "name": "Compile the mobile client"
+    "runs-on": "ubuntu-latest"
+    "steps":
+      -
+        "uses": "actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09"
+      -
+        "uses": "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6"
+        "with":
+          "bun-version": "1.4.4"
+      -
+        "name": "Test and build"
+        "working-directory": "${{ inputs.source_dir || 'mobile' }}/bundle"
+        "shell": "bash"
+        "run": |
+          set -euo pipefail
+          bun install --ignore-scripts
+          node scripts/test.mjs
+          SOLCORD_BUILD_WASM=1 node scripts/build.mjs --release-branch main --build-minify --builds-branch builds-mobile
+      -
+        "uses": "actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f"
+        "with":
+          "name": "solcord-mobile-client"
+          "path": "${{ inputs.source_dir || 'mobile' }}/bundle/dist/solcord.min.js"
+  "tweak":
+    "name": "Compile Solcord iOS loader"
+    "runs-on": "macos-15"
+    "steps":
+      -
+        "uses": "actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09"
+      -
+        "uses": "Randomblock1/theos-action@4e23d15886bca77b5f7c462a82567e0de33ebe0b"
+      -
+        "name": "Build signed-update-only loader"
+        "working-directory": "${{ inputs.source_dir || 'mobile' }}/ios"
+        "shell": "bash"
+        "run": |
+          set -euo pipefail
+          export PATH="$(brew --prefix make)/libexec/gnubin:$PATH"
+          make package SOLCORD_REQUIRE_SIGNED=1
+          mkdir -p out
+          cp packages/*.deb out/
+          cp "$(find .theos/_ -name Solcord.dylib | head -n 1)" out/Solcord.dylib
+      -
+        "uses": "actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f"
+        "with":
+          "name": "solcord-ios-loader"
+          "path": "${{ inputs.source_dir || 'mobile' }}/ios/out/"
+  "ipa":
+    "name": "Package Solcord IPA"
+    "needs":
+      - "bundle"
+      - "tweak"
+    "runs-on": "macos-15-intel"
+    "env":
+      "IPA_URL": "${{ inputs.ipa_url || 'https://github.com/ra1ncord/RainTweak/releases/download/v1.2.0/RainTweak.ipa' }}"
+      "IPA_SHA256": "${{ inputs.ipa_url && '' || '98225b128f99c0ac0ffe810ddcb781c73f01da4ce56dbf640a52cf84df0d6549' }}"
+    "steps":
+      -
+        "uses": "actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09"
+      -
+        "uses": "actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131"
+        "with":
+          "name": "solcord-ios-loader"
+          "path": "${{ runner.temp }}/tweak"
+      -
+        "uses": "actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131"
+        "with":
+          "name": "solcord-mobile-client"
+          "path": "${{ runner.temp }}/bundle"
+      -
+        "uses": "actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065"
+        "with":
+          "python-version": "3.12"
+      -
+        "name": "Inject the loader and embed the client"
+        "working-directory": "${{ inputs.source_dir || 'mobile' }}"
+        "shell": "bash"
+        "run": |
+          set -euo pipefail
+          export OUTPUT_IPA="$PWD/Solcord.ipa"
+          # Also into a log the ios-ci/ report carries, as Actions logs can't be read without signing in
+          exec > >(tee -a "$GITHUB_WORKSPACE/ipa.log") 2>&1
+          pip install "https://github.com/asdfzxcvbn/pyzule-rw/archive/740d3716dcd98c20c000f12cdb88f1f0b2a533a4.zip" Pillow
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/discord.ipa" "$IPA_URL"
+          if [ -n "$IPA_SHA256" ]; then
+            echo "$IPA_SHA256  $RUNNER_TEMP/discord.ipa" | shasum -a 256 -c -
+          fi
+          
+          # Discord alone goes in: a tweak the IPA came with would run next to Solcord
+          mkdir "$RUNNER_TEMP/source"
+          unzip -q "$RUNNER_TEMP/discord.ipa" -d "$RUNNER_TEMP/source"
+          if [ -f "$RUNNER_TEMP/source/Payload/Discord.app/Frameworks/RainTweak.dylib" ]; then
+            node ios/scripts/remove-dylib.cjs "$RUNNER_TEMP/source/Payload/Discord.app/Discord" "@rpath/RainTweak.dylib"
+            rm "$RUNNER_TEMP/source/Payload/Discord.app/Frameworks/RainTweak.dylib"
+            rm "$RUNNER_TEMP/discord.ipa"
+            (cd "$RUNNER_TEMP/source" && zip -qry "$RUNNER_TEMP/discord.ipa" Payload)
+          fi
+          unzip -p "$RUNNER_TEMP/discord.ipa" "Payload/Discord.app/Info.plist" > "$RUNNER_TEMP/Info.plist"
+          version=$(plutil -extract CFBundleShortVersionString raw "$RUNNER_TEMP/Info.plist")
+          echo "Discord $version"
+          echo "discord-version=$version" >> "$GITHUB_OUTPUT"
+          
+          # Discord's icon, given to cyan so it's read from plain files: a decrypted IPA is thinned for the device it came
+          # from, and iOS draws a blank icon when the asset catalog has no size for its screen
+          cp assets/solcord.png "$RUNNER_TEMP/icon.png"
+          
+          # -u: any device, -w: no watch app, -s: fakesigned for TrollStore, -g: without encrypted extensions, -q: arm64 only,
+          # -d: Solcord's files in the Files app, which the recovery menu's Open App Folder opens
+          cyan -i "$RUNNER_TEMP/discord.ipa" -o Solcord.ipa -f "$RUNNER_TEMP"/tweak/*.deb \
+            -n Solcord -k "$RUNNER_TEMP/icon.png" -uwsgqd
+          ls -l "$OUTPUT_IPA"
+          
+          mkdir "$RUNNER_TEMP/solcord" && unzip -q Solcord.ipa -d "$RUNNER_TEMP/solcord"
+          app=$(echo "$RUNNER_TEMP"/solcord/Payload/*.app)
+          mkdir -p "$app/SolcordResources"
+          cp "$RUNNER_TEMP/bundle/solcord.min.js" "$app/SolcordResources/solcord.min.js"
+          
+          # cyan stops at @2x, which a 3x iPhone would blur
+          icon=$(plutil -extract CFBundleIcons.CFBundlePrimaryIcon.CFBundleIconFiles.0 raw "$app/Info.plist")
+          sips -z 180 180 "$RUNNER_TEMP/icon.png" --out "$app/$icon@3x.png"
+          
+          # The screen share extension loads the tweak too, for the app group it shares with the app (Sideloading.x),
+          # and is listed as Solcord beside the App Store Discord's. cyan injects the main app only.
+          extension="$app/PlugIns/BroadcastUpload.appex"
+          if [ -f "$extension/BroadcastUpload" ]; then
+            tools=$(python -c 'from cyan import tbhutils; print(tbhutils.get_tools_dir()[1])')
+            node ios/scripts/insert-dylib.cjs "$extension/BroadcastUpload" "$extension/BroadcastUpload" "@rpath/Solcord.dylib"
+            plutil -replace CFBundleDisplayName -string Solcord "$extension/Info.plist"
+            # cyan's -s, again for this binary, for TrollStore; other installers sign it themselves
+            "$tools/ldid" -S -M "$extension/BroadcastUpload" || echo "::warning::The extension isn't fakesigned"
+          else
+            echo "::warning::No decrypted BroadcastUpload extension: screen share won't work in this IPA"
+          fi
+          rm Solcord.ipa
+          (cd "$RUNNER_TEMP/solcord" && zip -qry "$OUTPUT_IPA" Payload)
+          ls -l "$OUTPUT_IPA"
+          
+          if [ -e "$app/Frameworks/RainTweak.dylib" ] || otool -L "$app/Discord" | grep -q RainTweak; then
+            echo "::error::The IPA still has RainTweak in it"
+            exit 1
+          fi
+          if ! otool -L "$app/Discord" | grep -q Solcord.dylib; then
+            echo "::error::Discord doesn't load Solcord"
+            exit 1
+          fi
+          
+          # What can be checked without a device. The tweak takes JSI from Discord's Hermes at run time (linked with
+          # -undefined dynamic_lookup), so a symbol this Discord doesn't export would crash it on launch
+          for binary in "$app/$(plutil -extract CFBundleExecutable raw "$app/Info.plist")" "$app"/Frameworks/*.framework/* "$app"/Frameworks/*.dylib; do
+            if [ -f "$binary" ]; then
+              case "$(file -b "$binary")" in *Mach-O*) nm -gU "$binary" 2>/dev/null | awk '{ print $NF }' || true ;; esac
+            fi
+          done | sort -u > "$RUNNER_TEMP/exported.txt"
+          nm -u "$RUNNER_TEMP/tweak/Solcord.dylib" | { grep 'facebook3jsi' || true; } | sort -u > "$RUNNER_TEMP/needed.txt"
+          missing=$(comm -23 "$RUNNER_TEMP/needed.txt" "$RUNNER_TEMP/exported.txt")
+          if [ -n "$missing" ]; then
+            echo "::error::Discord $version doesn't export JSI the tweak uses:"
+            echo "$missing"
+            exit 1
+          fi
+          echo "All $(wc -l < "$RUNNER_TEMP/needed.txt") JSI symbols the tweak uses are exported by Discord $version"
+          # The tweak loads Solcord from RCTHost's instance:didInitializeRuntime:, which bridgeless Discord calls
+          if ! grep -rqa "instance:didInitializeRuntime:" "$app"; then
+            echo "::error::Discord $version has no instance:didInitializeRuntime: for the tweak to hook"
+            exit 1
+          fi
+          # The bundle the tweak will download for this Discord: solcord.v<version>.hbc, or solcord.min.js without one
+          if [ -f "$app/main.jsbundle" ]; then
+            bytecode=$(od -An -t u4 -j 8 -N 4 "$app/main.jsbundle" | tr -d ' ')
+            echo "Discord's bundle is Hermes bytecode version $bytecode"
+            if ! curl -fsI "https://raw.githubusercontent.com/$GITHUB_REPOSITORY/builds-mobile/solcord.v$bytecode.hbc" > /dev/null; then
+              echo "::warning::No solcord.v$bytecode.hbc on builds-mobile: this Discord will run solcord.min.js"
+            fi
+          else
+            echo "::warning::Discord $version has no main.jsbundle, where the tweak reads its bytecode version"
+          fi
+          
+          # What the AltStore source has to declare: AltStore refuses an app whose entitlements (of the app and its
+          # extensions) and privacy usage descriptions differ from its source's, and the build number has to match
+          python - "$RUNNER_TEMP/solcord" app.json <<'EOF'
+          import glob, json, plistlib, subprocess, sys
+          app = glob.glob(f"{sys.argv[1]}/Payload/*.app")[0]
+          entitlements, privacy = set(), {}
+          for bundle in [app, *glob.glob(f"{app}/PlugIns/*.appex"), *glob.glob(f"{app}/Extensions/*.appex")]:
+              signed = subprocess.run(["codesign", "-d", "--entitlements", "-", "--xml", bundle], capture_output=True).stdout
+              if signed.strip():
+                  entitlements.update(plistlib.loads(signed))
+              with open(f"{bundle}/Info.plist", "rb") as f:
+                  for key, value in plistlib.load(f).items():
+                      if key.endswith("UsageDescription") and isinstance(value, str):
+                          privacy.setdefault(key, value)
+          # Every app has these, so sources leave them out
+          entitlements -= {"application-identifier", "com.apple.developer.team-identifier"}
+          with open(f"{app}/Info.plist", "rb") as f:
+              info = plistlib.load(f)
+          with open(sys.argv[2], "w") as f:
+              json.dump({
+                  "buildVersion": info["CFBundleVersion"],
+                  "minOSVersion": info.get("MinimumOSVersion", "15.0"),
+                  "appPermissions": {"entitlements": sorted(entitlements), "privacy": privacy},
+              }, f, indent=2)
+          EOF
+          cat app.json
+      -
+        "uses": "actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f"
+        "with":
+          "name": "Solcord-iOS"
+          "path": |
+            ${{ inputs.source_dir || 'mobile' }}/Solcord.ipa
+            ${{ inputs.source_dir || 'mobile' }}/app.json
