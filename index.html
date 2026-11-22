@@ -847,9 +847,88 @@ footer {
   html { scroll-behavior: auto; }
   .hero-anim, .motion-ready .reveal, .sol-glyph, .sol-orbit, .sol-aura { animation: none; opacity: 1; transform: none; }
 }
+
+/* Welcome overlay — blurred backdrop, dismisses on first interaction */
+.welcome-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(3, 3, 3, 0.55);
+  backdrop-filter: blur(20px) saturate(135%);
+  -webkit-backdrop-filter: blur(20px) saturate(135%);
+  cursor: pointer;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.55s var(--ease), visibility 0.55s var(--ease);
+}
+.welcome-overlay.dismissed {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.welcome-card {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  animation: rise 0.7s var(--ease) both;
+}
+.welcome-glyph {
+  width: 64px;
+  height: 64px;
+  filter: drop-shadow(0 0 20px rgba(20, 241, 149, 0.32));
+  animation: spin-sol 11s linear infinite;
+}
+.welcome-title {
+  font-size: clamp(30px, 6.5vw, 48px);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  margin: 0;
+}
+.welcome-sub {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text);
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+.welcome-hint {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--border);
+}
+@media (prefers-reduced-motion: reduce) {
+  .welcome-glyph, .welcome-card { animation: none; }
+}
 </style>
 </head>
 <body>
+
+<div class="welcome-overlay" id="welcome-overlay" role="button" tabindex="0" aria-label="welcome to solcord — click to continue">
+  <div class="welcome-card">
+    <svg class="welcome-glyph" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="wBar1" x1="12" y1="18" x2="88" y2="34" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#14f195"/><stop offset="100%" stop-color="#9945ff"/></linearGradient>
+        <linearGradient id="wBar2" x1="88" y1="44" x2="12" y2="58" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#14f195"/><stop offset="100%" stop-color="#9945ff"/></linearGradient>
+        <linearGradient id="wBar3" x1="12" y1="68" x2="88" y2="82" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#14f195"/><stop offset="100%" stop-color="#9945ff"/></linearGradient>
+      </defs>
+      <path d="M24 20H82L72 33H14L24 20Z" fill="url(#wBar1)"/>
+      <path d="M18 44H76L86 57H28L18 44Z" fill="url(#wBar2)"/>
+      <path d="M24 68H82L72 81H14L24 68Z" fill="url(#wBar3)"/>
+    </svg>
+    <h1 class="welcome-title">welcome to <span class="grad-text">solcord</span></h1>
+    <p class="welcome-sub">click anywhere to continue</p>
+    <p class="welcome-hint">enables the background track</p>
+  </div>
+</div>
 
 <canvas id="particles" aria-hidden="true"></canvas>
 
@@ -1131,7 +1210,7 @@ footer {
   </div>
 </footer>
 
-<audio id="bg-audio" src="./rib.mp3" autoplay loop preload="metadata"></audio>
+<audio id="bg-audio" src="./my%20rib.mp3" autoplay loop preload="metadata"></audio>
 
 <script>
 (function(){
@@ -1140,7 +1219,7 @@ footer {
   const SOLCORD_CONFIG = Object.freeze({
     downloadUrl: 'https://drive.google.com/uc?export=download&id=1yHqvhgix0jgqmE3wO5ea-wkWAYhvS7Ms',
     statsUrl: 'https://solcord-presence.adammohamedali01.workers.dev/v1/stats',
-    audioUrl: './rib.mp3'
+    audioUrl: './my%20rib.mp3'
   });
 
   document.querySelectorAll('.download-link').forEach(function(link) {
@@ -1194,6 +1273,22 @@ footer {
   document.addEventListener('pointerdown', retryAutoplay);
   document.addEventListener('keydown', retryAutoplay);
   playSong();
+
+  // Welcome overlay — dismiss on first interaction, unlock audio on the same gesture
+  const welcomeOverlay = document.getElementById('welcome-overlay');
+  let welcomeDismissed = false;
+  function dismissWelcome() {
+    if (welcomeDismissed || !welcomeOverlay) return;
+    welcomeDismissed = true;
+    welcomeOverlay.classList.add('dismissed');
+    stopAutoplayRetry();
+    playSong();
+  }
+  if (welcomeOverlay) {
+    document.addEventListener('pointerdown', dismissWelcome, { once: true });
+    document.addEventListener('keydown', dismissWelcome, { once: true });
+    welcomeOverlay.addEventListener('click', dismissWelcome);
+  }
 
   // Bento spotlight
   document.querySelectorAll('.card').forEach(function(card) {
