@@ -19,9 +19,9 @@ import {
     SNOWFLAKE, withoutPictures, writeProfileMessage
 } from "./sharingFormat";
 
-export const PROFILES_GUILD_ID = "1543323763695820942";
+export const PROFILES_GUILD_ID = "1573399159451689152";
 /** The profiles channel in the Solcord server, the same one Solcord PC reads and writes */
-export const PROFILES_CHANNEL_ID = "1568188531480993842";
+export const PROFILES_CHANNEL_ID = "1573410012716343389";
 export const PROFILES_INVITE_CODE = "solcord";
 export const PROFILES_INVITE = `https://discord.gg/${PROFILES_INVITE_CODE}`;
 

@@ -20,7 +20,9 @@ let unpatch: (() => void) | undefined;
 
 /** A badge for useBadges' list, drawn from `uri` */
 export function linkedBadge(id: string, description: string, uri: string) {
+    sources.delete(id);
     sources.set(id, uri);
+    while (sources.size > 2048) sources.delete(sources.keys().next().value!);
     return { id, description, icon: "dummy", iconSrc: uri };
 }
 

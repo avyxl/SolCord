@@ -8,6 +8,15 @@ import com.google.devrel.gmscore.tools.apk.arsc.*
 import java.io.File
 
 object AxmlUtil {
+    fun readAdaptiveIconReferences(bytes: ByteArray): Map<String, BinaryResourceIdentifier> {
+        val xml = BinaryResourceFile(bytes).getMainAxmlChunk()
+        return listOf("foreground", "monochrome").mapNotNull { name ->
+            val chunk = xml.getStartElementChunk(name) ?: return@mapNotNull null
+            val value = chunk.getAttribute("drawable").typedValue()
+            if (value.type() != BinaryResourceValue.Type.REFERENCE) return@mapNotNull null
+            name to BinaryResourceIdentifier.create(value.data())
+        }.toMap()
+    }
     /**
      * Read and parse a specific axml resource inside an APK
      * @param apk The source apk
@@ -74,9 +83,15 @@ object AxmlUtil {
         backgroundColor: BinaryResourceIdentifier? = null,
         foregroundIcon: BinaryResourceIdentifier? = null,
         monochromeIcon: BinaryResourceIdentifier? = null,
+        backgroundArgb: Int? = null,
     ) {
         val xml = readAxml(apk, referencePath)
         val xmlChunk = xml.getMainAxmlChunk()
+
+        if (backgroundArgb != null) {
+            xmlChunk.getStartElementChunk("background")!!.getAttribute("drawable").typedValue()
+                .setValue(BinaryResourceValue.Type.INT_COLOR_ARGB8, backgroundArgb)
+        }
 
         // Patch the background color resource reference
         if (backgroundColor != null) {

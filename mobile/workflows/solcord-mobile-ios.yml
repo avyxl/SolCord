@@ -1,5 +1,7 @@
 "name": "Build Solcord for iPhone"
 "on":
+  "push":
+    "branches": ["solcord/mobile-builds-*"]
   "workflow_dispatch":
     "inputs":
       "source_dir":
@@ -26,7 +28,7 @@
           "bun-version": "1.4.4"
       -
         "name": "Test and build"
-        "working-directory": "${{ inputs.source_dir }}/bundle"
+        "working-directory": "${{ inputs.source_dir || 'mobile' }}/bundle"
         "shell": "bash"
         "run": |
           set -euo pipefail
@@ -37,7 +39,7 @@
         "uses": "actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f"
         "with":
           "name": "solcord-mobile-client"
-          "path": "${{ inputs.source_dir }}/bundle/dist/solcord.min.js"
+          "path": "${{ inputs.source_dir || 'mobile' }}/bundle/dist/solcord.min.js"
   "tweak":
     "name": "Compile Solcord iOS loader"
     "runs-on": "macos-15"
@@ -48,7 +50,7 @@
         "uses": "Randomblock1/theos-action@4e23d15886bca77b5f7c462a82567e0de33ebe0b"
       -
         "name": "Build signed-update-only loader"
-        "working-directory": "${{ inputs.source_dir }}/ios"
+        "working-directory": "${{ inputs.source_dir || 'mobile' }}/ios"
         "shell": "bash"
         "run": |
           set -euo pipefail
@@ -61,7 +63,7 @@
         "uses": "actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f"
         "with":
           "name": "solcord-ios-loader"
-          "path": "${{ inputs.source_dir }}/ios/out/"
+          "path": "${{ inputs.source_dir || 'mobile' }}/ios/out/"
   "ipa":
     "name": "Package Solcord IPA"
     "needs":
@@ -90,7 +92,7 @@
           "python-version": "3.12"
       -
         "name": "Inject the loader and embed the client"
-        "working-directory": "${{ inputs.source_dir }}"
+        "working-directory": "${{ inputs.source_dir || 'mobile' }}"
         "shell": "bash"
         "run": |
           set -euo pipefail
@@ -148,6 +150,9 @@
           else
             echo "::warning::No decrypted BroadcastUpload extension: screen share won't work in this IPA"
           fi
+          # All app mutations are complete. Re-sign inside out and validate the finished resource seals.
+          python ios/scripts/seal-ipa.py "$app" > Signing-Checks.txt
+          cat Signing-Checks.txt
           rm Solcord.ipa
           (cd "$RUNNER_TEMP/solcord" && zip -qry "$OUTPUT_IPA" Payload)
           ls -l "$OUTPUT_IPA"
@@ -221,7 +226,8 @@
       -
         "uses": "actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f"
         "with":
-          "name": "Solcord-iOS-preview"
+          "name": "Solcord-iOS"
           "path": |
-            ${{ inputs.source_dir }}/Solcord.ipa
-            ${{ inputs.source_dir }}/app.json
+            ${{ inputs.source_dir || 'mobile' }}/Solcord.ipa
+            ${{ inputs.source_dir || 'mobile' }}/app.json
+            ${{ inputs.source_dir || 'mobile' }}/Signing-Checks.txt

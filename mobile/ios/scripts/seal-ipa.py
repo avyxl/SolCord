@@ -30,7 +30,7 @@ def main():
     containers.sort(key=lambda file: len(file.parts), reverse=True)
     containers.append(app)
     for item in [*binaries, *containers]:
-        invoke('codesign','--force','--sign','-','--timestamp=none','--generate-entitlement-der','--preserve-metadata=entitlements,requirements',str(item))
+        invoke('codesign','--force','--sign','-','--timestamp=none','--generate-entitlement-der','--preserve-metadata=entitlements',str(item))
     for item in [*binaries, *containers]:
         invoke('codesign','--verify','--strict','--verbose=2',str(item))
     invoke('codesign','--verify','--deep','--strict','--verbose=2',str(app))

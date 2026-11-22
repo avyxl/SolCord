@@ -4,8 +4,8 @@ import { afterAll, beforeAll, describe, expect, jest, mock, test } from "bun:tes
 
 import { SRC } from "./src";
 
-const CHANNEL = "1568188531480993842";
-const GUILD = "1543323763695820942";
+const CHANNEL = "1573410012716343389";
+const GUILD = "1573399159451689152";
 const DISCORD_EPOCH = 1420070400000;
 
 // ---- Fakes ------------------------------------------------------------------------------------------------------------

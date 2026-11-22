@@ -9,6 +9,35 @@ import app.revenge.manager.BuildConfig
 import java.io.File
 
 object ArscUtil {
+    fun ResourceTableChunk.resourceFileNames(id: BinaryResourceIdentifier): Set<String> {
+        val target = packages.single { it.id == id.packageId() }
+        return target.getTypeChunks(id.typeId()).mapNotNull { type ->
+            val entry = type.getEntry(id.entryId())
+            if (entry == null || entry.isComplex || entry.value().type() != BinaryResourceValue.Type.STRING) null
+            else stringPool.getString(entry.value().data())
+        }.toSet()
+    }
+
+    /** Reuse an existing drawable ID and its configurations; no fragile new resource IDs are allocated. */
+    fun ResourceTableChunk.retargetFileResource(id: BinaryResourceIdentifier, path: String, rasterOnly: Boolean = false): Int {
+        val target = packages.single { it.id == id.packageId() }
+        val stringIndex = stringPool.addString(path, true)
+        var changed = 0
+        for (type in target.getTypeChunks(id.typeId())) {
+            val entry = type.getEntry(id.entryId()) ?: continue
+            if (entry.isComplex) continue
+            if (rasterOnly) {
+                if (entry.value().type() != BinaryResourceValue.Type.STRING) continue
+                val old = stringPool.getString(entry.value().data())
+                if (!old.endsWith(".png") && !old.endsWith(".webp")) continue
+            }
+            entry.value().setValue(BinaryResourceValue.Type.STRING, stringIndex)
+            type.overrideEntry(id.entryId(), entry)
+            changed++
+        }
+        return changed
+    }
+
     /**
      * Read and parse `resources.arsc` from an APK.
      */

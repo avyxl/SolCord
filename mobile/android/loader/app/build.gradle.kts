@@ -15,8 +15,8 @@ android {
         applicationId = "com.solcord.xposed"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 1001000
+        versionName = "1.1.0"
 
         // The published bundle. Pass -Psolcord.bundleUrl=http://10.0.2.2:4040/solcord.min.js to test a local build.
         val bundleUrl = providers.gradleProperty("solcord.bundleUrl")
