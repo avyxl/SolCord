@@ -1,0 +1,30 @@
+{
+    "version": "3.0.1",
+    "hash": "bfc3c426714337b8",
+    "updatedAt": 1795374227454,
+    "installerSha256": "604b3f70256179dc3f1fc72a6849cdeaa51b197c708c06b0dfd4061de0609c19",
+    "downloadUrl": "https://raw.githubusercontent.com/avyxl/SolCord/e96d42f44d6988f28b5a1227adb64c656329f079/SolcordInstaller.exe",
+    "assets": [
+        {
+            "name": "patcher.js",
+            "url": "https://raw.githubusercontent.com/avyxl/SolCord/e96d42f44d6988f28b5a1227adb64c656329f079/dist/patcher.js",
+            "sha256": "8620d338fdf9a5b8f64c7af5b1abae3510b172ca65035b1adce41335b88a89ca"
+        },
+        {
+            "name": "preload.js",
+            "url": "https://raw.githubusercontent.com/avyxl/SolCord/e96d42f44d6988f28b5a1227adb64c656329f079/dist/preload.js",
+            "sha256": "b60ee98869e4148bc0156dbdcb4ec864100d790f2dd8ced5d36bb8a068087726"
+        },
+        {
+            "name": "renderer.js",
+            "url": "https://raw.githubusercontent.com/avyxl/SolCord/e96d42f44d6988f28b5a1227adb64c656329f079/dist/renderer.js",
+            "sha256": "e2a56dcf8362a895a37e812a3123602e5d5628e0ed8c12a313e5543435236f40"
+        },
+        {
+            "name": "renderer.css",
+            "url": "https://raw.githubusercontent.com/avyxl/SolCord/e96d42f44d6988f28b5a1227adb64c656329f079/dist/renderer.css",
+            "sha256": "634c19a0d85d8a41ffa3885d610fd7e6ebe1d50fce6b4cfb6fee39c67d3df6db"
+        }
+    ],
+    "signature": "MEYCIQDwGmt+caX2kap8RWmi7BDjJWfOnN26Tqfp95IfyO7s8wIhALtaOOg3rPGjNfeTo4G9+zpPzKq/UHLpXVrR0jG/4UmF"
+}
