@@ -150,6 +150,9 @@
           else
             echo "::warning::No decrypted BroadcastUpload extension: screen share won't work in this IPA"
           fi
+          # All app mutations are complete. Re-sign inside out and validate the finished resource seals.
+          python ios/scripts/seal-ipa.py "$app" > Signing-Checks.txt
+          cat Signing-Checks.txt
           rm Solcord.ipa
           (cd "$RUNNER_TEMP/solcord" && zip -qry "$OUTPUT_IPA" Payload)
           ls -l "$OUTPUT_IPA"
@@ -227,3 +230,4 @@
           "path": |
             ${{ inputs.source_dir || 'mobile' }}/Solcord.ipa
             ${{ inputs.source_dir || 'mobile' }}/app.json
+            ${{ inputs.source_dir || 'mobile' }}/Signing-Checks.txt
