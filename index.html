@@ -908,6 +908,311 @@ footer {
 @media (prefers-reduced-motion: reduce) {
   .welcome-glyph, .welcome-card { animation: none; }
 }
+
+/* Mobile Downloads Section */
+.mobile-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.mobile-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color 0.2s var(--ease), color 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+.mobile-tab-btn.active {
+  border-color: var(--border-mint);
+  color: var(--mint);
+  background: rgba(20, 241, 149, 0.06);
+}
+
+.mobile-tab-btn:hover:not(.active) {
+  border-color: var(--border-purple);
+  color: var(--text);
+}
+
+.mobile-panel {
+  display: none;
+}
+
+.mobile-panel.active {
+  display: block;
+}
+
+.dl-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+.dl-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px 28px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(9, 9, 12, 0.85);
+  transition: border-color 0.25s var(--ease), transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+.dl-card:hover {
+  border-color: var(--border-mint);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px -10px rgba(20, 241, 149, 0.18);
+}
+
+.dl-card.android:hover {
+  border-color: var(--border-purple);
+  box-shadow: 0 12px 32px -10px rgba(153, 69, 255, 0.2);
+}
+
+.dl-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.dl-icon.ios-icon {
+  background: linear-gradient(135deg, rgba(20, 241, 149, 0.15), rgba(20, 241, 149, 0.04));
+  border: 1px solid var(--border-mint);
+}
+
+.dl-icon.apk-icon {
+  background: linear-gradient(135deg, rgba(153, 69, 255, 0.15), rgba(153, 69, 255, 0.04));
+  border: 1px solid var(--border-purple);
+}
+
+.dl-info {
+  flex: 1;
+}
+
+.dl-platform {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+
+.dl-info strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  margin-bottom: 4px;
+}
+
+.dl-info p {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 0 14px;
+}
+
+.dl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+.dl-btn.mint {
+  background: rgba(20, 241, 149, 0.12);
+  border: 1px solid var(--border-mint);
+  color: var(--mint);
+}
+
+.dl-btn.mint:hover {
+  background: rgba(20, 241, 149, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px -6px rgba(20, 241, 149, 0.4);
+}
+
+.dl-btn.purple {
+  background: rgba(153, 69, 255, 0.12);
+  border: 1px solid var(--border-purple);
+  color: var(--purple);
+}
+
+.dl-btn.purple:hover {
+  background: rgba(153, 69, 255, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px -6px rgba(153, 69, 255, 0.4);
+}
+
+.tutorial-embed {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #000;
+  position: relative;
+  padding-top: 56.25%;
+}
+
+.tutorial-embed iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.tutorial-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tutorial-label::before {
+  content: "";
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--mint);
+  animation: pulse-ring 2.4s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+  box-shadow: 0 0 0 2px rgba(20, 241, 149, 0.2);
+}
+
+@media (max-width: 680px) {
+  .dl-cards { grid-template-columns: 1fr; }
+}
+
+/* YouTube thumbnail card */
+.yt-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #000;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.25s var(--ease), transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+.yt-card:hover {
+  border-color: rgba(255, 0, 0, 0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px -12px rgba(255, 0, 0, 0.25);
+}
+
+.yt-thumb {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;
+  overflow: hidden;
+  background: #111;
+}
+
+.yt-thumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s var(--ease), opacity 0.3s ease;
+  opacity: 0.88;
+}
+
+.yt-card:hover .yt-thumb img {
+  transform: scale(1.03);
+  opacity: 1;
+}
+
+.yt-play {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  transition: transform 0.25s var(--ease);
+}
+
+.yt-card:hover .yt-play {
+  transform: scale(1.1);
+}
+
+.yt-meta {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(9, 9, 12, 0.95);
+  border-top: 1px solid var(--border);
+}
+
+.yt-title {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.yt-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.yt-sub::before {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 10px;
+  background: #ff0000;
+  border-radius: 2px;
+}
+
+/* Native video player */
+.native-video-wrap {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #000;
+  line-height: 0;
+  transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+.native-video-wrap:hover {
+  border-color: var(--border-mint);
+  box-shadow: 0 16px 40px -12px rgba(20, 241, 149, 0.15);
+}
+
+.native-video {
+  width: 100%;
+  display: block;
+  max-height: 540px;
+  background: #000;
+}
+
 </style>
 </head>
 <body>
@@ -945,6 +1250,7 @@ footer {
       <a href="#install">install</a>
       <a href="#updates">v3.0.0</a>
       <a href="#faq">faq</a>
+      <a href="#mobile">mobile</a>
     </div>
     <div class="nav-right">
       <button class="audio-pill" id="audio-toggle" type="button" aria-pressed="false" title="toggle background track">
@@ -1198,6 +1504,68 @@ footer {
   </section>
 </main>
 
+  <section class="section" id="mobile" style="border-bottom:0">
+    <div class="wrap">
+      <div class="section-label reveal">
+        <span><span>04</span> / mobile</span>
+        <span class="sub-mono">iOS · Android</span>
+      </div>
+
+      <div class="reveal">
+        <div class="dl-cards">
+          <!-- iOS -->
+          <div class="dl-card">
+            <div class="dl-icon ios-icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.37 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" fill="#14f195"/>
+              </svg>
+            </div>
+            <div class="dl-info">
+              <div class="dl-platform">iOS · sideload</div>
+              <strong>Solcord iOS 1.1.0</strong>
+              <p>Sideload the .ipa using AltStore, Sideloadly, or similar.</p>
+              <a class="dl-btn mint" href="https://github.com/avyxl/SolCord/releases/download/ipa/Solcord-iOS-1.1.0.ipa">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zM5 18h14v2H5v-2z"/></svg>
+                download .ipa
+              </a>
+            </div>
+          </div>
+
+          <!-- Android -->
+          <div class="dl-card android">
+            <div class="dl-icon apk-icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.523 15.341a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0zm-9.546 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0zM3.136 7.914l1.666-2.887a.345.345 0 0 1 .598.342L3.766 8.1a8.46 8.46 0 0 1 4.123-1.065h.222c1.52 0 2.952.4 4.122 1.065L10.6 5.369a.345.345 0 0 1 .598-.342l1.666 2.887A8.567 8.567 0 0 1 17.5 13.5H6.5a8.567 8.567 0 0 1 4.636-5.586zM6.5 15h11v3a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 6.5 18v-3z" fill="#9945ff"/>
+              </svg>
+            </div>
+            <div class="dl-info">
+              <div class="dl-platform">Android · APK</div>
+              <strong>Solcord Android 1.1.0</strong>
+              <p>Install directly — enable "Install from unknown sources" in settings.</p>
+              <a class="dl-btn purple" href="https://github.com/avyxl/SolCord/releases/download/ipa/SolcordInstaller-Android-1.1.0.apk">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zM5 18h14v2H5v-2z"/></svg>
+                download .apk
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- iOS Tutorial — native video -->
+        <div class="tutorial-label">iOS install tutorial</div>
+        <div class="native-video-wrap">
+          <video
+            class="native-video"
+            src="tut.mp4"
+            controls
+            playsinline
+            preload="metadata"
+            aria-label="Solcord iOS install tutorial"
+          ></video>
+        </div>
+      </div>
+    </div>
+  </section>
+
 <footer>
   <div class="wrap footer-row">
     <span>solcord 3.0.0 · avyxl · solcord.site · gpl-3.0-or-later</span>
@@ -1210,7 +1578,7 @@ footer {
   </div>
 </footer>
 
-<audio id="bg-audio" src="./my%20rib.mp3" autoplay loop preload="metadata"></audio>
+<audio id="bg-audio" src="./my%20rib.mp3" loop preload="none"></audio>
 
 <script>
 (function(){
@@ -1239,11 +1607,6 @@ footer {
     audioLabel.textContent = playing ? 'playing' : 'play song';
   }
 
-  function stopAutoplayRetry() {
-    document.removeEventListener('pointerdown', retryAutoplay);
-    document.removeEventListener('keydown', retryAutoplay);
-  }
-
   function playSong() {
     audioEl.play().catch(function(error) {
       syncAudioUI(false);
@@ -1253,36 +1616,26 @@ footer {
     });
   }
 
-  function retryAutoplay(event) {
-    if (event.target instanceof Element && event.target.closest('#audio-toggle')) return;
-    playSong();
-  }
-
   audioBtn.addEventListener('click', function() {
-    stopAutoplayRetry();
     if (audioEl.paused) playSong();
     else audioEl.pause();
   });
   audioEl.addEventListener('pause', function() { syncAudioUI(false); });
-  audioEl.addEventListener('play', function() { stopAutoplayRetry(); syncAudioUI(true); });
+  audioEl.addEventListener('play', function() { syncAudioUI(true); });
   audioEl.addEventListener('error', function() {
-    stopAutoplayRetry();
     syncAudioUI(false);
-    audioLabel.textContent = 'rib.mp3 unavailable';
+    audioLabel.textContent = 'unavailable';
   });
-  document.addEventListener('pointerdown', retryAutoplay);
-  document.addEventListener('keydown', retryAutoplay);
-  playSong();
 
-  // Welcome overlay — dismiss on first interaction, unlock audio on the same gesture
+  // Welcome overlay — dismiss on first interaction (no autoplay)
   const welcomeOverlay = document.getElementById('welcome-overlay');
   let welcomeDismissed = false;
   function dismissWelcome() {
     if (welcomeDismissed || !welcomeOverlay) return;
     welcomeDismissed = true;
     welcomeOverlay.classList.add('dismissed');
-    stopAutoplayRetry();
-    playSong();
+    // play soft intro chime
+    sfx('intro');
   }
   if (welcomeOverlay) {
     document.addEventListener('pointerdown', dismissWelcome, { once: true });
@@ -1453,6 +1806,121 @@ footer {
   document.addEventListener('visibilitychange', function() {
     if (!document.hidden) updateCounter();
   });
+  // ── Sound Effects ─────────────────────────────────────────────────
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let actx = null;
+
+  function getACtx() {
+    if (!actx) actx = new AudioCtx();
+    if (actx.state === 'suspended') actx.resume();
+    return actx;
+  }
+
+  function sfx(type) {
+    if (motionOff()) return;
+    try {
+      const ctx = getACtx();
+      const g = ctx.createGain();
+      g.connect(ctx.destination);
+      const now = ctx.currentTime;
+
+      if (type === 'intro') {
+        // gentle sparkle arp: three soft sine pings
+        [0, 0.12, 0.24].forEach(function(t, i) {
+          const o = ctx.createOscillator();
+          const og = ctx.createGain();
+          o.connect(og); og.connect(ctx.destination);
+          o.type = 'sine';
+          const freqs = [523, 659, 784];
+          o.frequency.value = freqs[i];
+          og.gain.setValueAtTime(0, now + t);
+          og.gain.linearRampToValueAtTime(0.08, now + t + 0.02);
+          og.gain.exponentialRampToValueAtTime(0.0001, now + t + 0.38);
+          o.start(now + t);
+          o.stop(now + t + 0.4);
+        });
+
+      } else if (type === 'click') {
+        // subtle "tick" — short band-passed noise burst
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.04, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        const bp = ctx.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.frequency.value = 2200;
+        bp.Q.value = 1.4;
+        const gainN = ctx.createGain();
+        gainN.gain.setValueAtTime(0.07, now);
+        gainN.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+        src.connect(bp); bp.connect(gainN); gainN.connect(ctx.destination);
+        src.start(now); src.stop(now + 0.05);
+
+      } else if (type === 'hover') {
+        // airy high sine blip
+        const o = ctx.createOscillator();
+        const og = ctx.createGain();
+        o.connect(og); og.connect(ctx.destination);
+        o.type = 'sine';
+        o.frequency.setValueAtTime(1050, now);
+        o.frequency.exponentialRampToValueAtTime(1300, now + 0.06);
+        og.gain.setValueAtTime(0.045, now);
+        og.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+        o.start(now); o.stop(now + 0.12);
+
+      } else if (type === 'download') {
+        // satisfying "swoosh-to-thud"
+        [0, 0.09, 0.19].forEach(function(t, i) {
+          const o = ctx.createOscillator();
+          const og = ctx.createGain();
+          o.connect(og); og.connect(ctx.destination);
+          o.type = i < 2 ? 'triangle' : 'sine';
+          const baseFreqs = [420, 320, 180];
+          o.frequency.setValueAtTime(baseFreqs[i] * 1.3, now + t);
+          o.frequency.exponentialRampToValueAtTime(baseFreqs[i], now + t + 0.14);
+          og.gain.setValueAtTime(0, now + t);
+          og.gain.linearRampToValueAtTime(i === 2 ? 0.12 : 0.07, now + t + 0.02);
+          og.gain.exponentialRampToValueAtTime(0.0001, now + t + 0.22);
+          o.start(now + t); o.stop(now + t + 0.25);
+        });
+      }
+    } catch (e) {}
+  }
+
+  // Attach SFX to interactive elements
+  document.querySelectorAll('.btn, .dl-btn, .audio-pill, .mobile-tab-btn').forEach(function(el) {
+    el.addEventListener('mouseenter', function() { sfx('hover'); }, { passive: true });
+    el.addEventListener('click', function() {
+      if (el.classList.contains('dl-btn') || el.classList.contains('download-link')) {
+        sfx('download');
+      } else {
+        sfx('click');
+      }
+    }, { passive: true });
+  });
+
+  document.querySelectorAll('.card').forEach(function(card) {
+    card.addEventListener('mouseenter', function() { sfx('hover'); }, { passive: true });
+  });
+
+  document.querySelectorAll('details summary').forEach(function(s) {
+    s.addEventListener('click', function() { sfx('click'); }, { passive: true });
+  });
+
+  // ── Mobile tab switching ───────────────────────────────────────────
+  document.querySelectorAll('.mobile-tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var target = btn.dataset.tab;
+      document.querySelectorAll('.mobile-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.mobile-panel').forEach(function(p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      var panel = document.getElementById('panel-' + target);
+      if (panel) panel.classList.add('active');
+      sfx('click');
+    });
+  });
+
 })();
 </script>
 </body>
