@@ -1,4 +1,4 @@
-name: Solcord Linux 3.0.2
+name: Solcord Linux 3.0.3
 on:
   push:
     branches: [solcord/linux-3.0-commands-2026-11-23]
@@ -8,7 +8,7 @@ permissions:
   contents: read
 jobs:
   linux:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -17,6 +17,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.10'
+          cache: false
+      - name: Install native setup dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y python3-tk tk8.6 xvfb libnss3 libgbm1 libasound2
+          python -m pip install --disable-pip-version-check pyinstaller==6.16.0
       - name: Unpack the matching client and corresponding source
         shell: bash
         run: |
@@ -24,14 +36,14 @@ jobs:
           import os,pathlib,tarfile,zipfile,shutil
           workspace=pathlib.Path(os.environ['GITHUB_WORKSPACE'])
           temp=pathlib.Path(os.environ['RUNNER_TEMP'])
-          with tarfile.open(workspace/'linux/Solcord-Linux-3.0.2.tar.gz') as archive:
+          with tarfile.open(workspace/'linux/Solcord-Linux-3.0.3.tar.gz') as archive:
               archive.extractall(temp/'release',filter='data')
-          release=temp/'release/Solcord-Linux-3.0.2'
-          with zipfile.ZipFile(release/'Source/Solcord-3.0.2-source.zip') as archive:
+          release=temp/'release/Solcord-Linux-3.0.3'
+          with zipfile.ZipFile(release/'Source/Solcord-3.0.3-source.zip') as archive:
               for entry in archive.namelist():
                   if pathlib.PurePosixPath(entry).is_absolute() or '..' in pathlib.PurePosixPath(entry).parts:raise RuntimeError('Unsafe source path')
               archive.extractall(temp/'source')
-          source=temp/'source/Solcord-3.0.2'
+          source=temp/'source/Solcord-3.0.3'
           (source/'dist').mkdir(exist_ok=True)
           for name in ['patcher.js','preload.js','renderer.js','renderer.css']:
               shutil.copyfile(release/'payload'/name,source/'dist'/name)
@@ -59,13 +71,29 @@ jobs:
           node test/solcord3-navigation.mjs
           node test/solcord3-playback.mjs
           node test/solcord3-reading.mjs
+      - name: Compile and test the static native launcher
+        shell: bash
+        run: |
+          cd "$SOLCORD_SOURCE/scripts/linuxInstaller"
+          gofmt -w launcher.go launcher_test.go
+          GO111MODULE=off go test -v launcher.go launcher_test.go
+          CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -buildid=" -o "$RUNNER_TEMP/solcord-launcher" launcher.go
+      - name: Compile the self-contained Linux setup executable
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/native-dist"
+          python -m PyInstaller --noconfirm --onefile --name SolcordInstaller-Linux-3.0.3-x86_64 --distpath "$RUNNER_TEMP/native-dist" --workpath "$RUNNER_TEMP/native-build" --specpath "$RUNNER_TEMP" --add-data "$SOLCORD_RELEASE/payload:payload" --add-data "$SOLCORD_RELEASE/solcord.png:." --add-data "$RUNNER_TEMP/solcord-launcher:." --add-data "$SOLCORD_RELEASE/Source:Source" --add-data "$SOLCORD_RELEASE/LICENSE:." --add-data "$SOLCORD_RELEASE/THIRD_PARTY_NOTICES.md:." --add-data "$SOLCORD_RELEASE/README.md:." "$SOLCORD_SOURCE/scripts/linuxInstaller/solcord_gui.py"
+          file "$RUNNER_TEMP/native-dist/SolcordInstaller-Linux-3.0.3-x86_64"
+          timeout 30 xvfb-run -a "$RUNNER_TEMP/native-dist/SolcordInstaller-Linux-3.0.3-x86_64" --ui-smoke
+          cd "$RUNNER_TEMP/native-dist"
+          sha256sum SolcordInstaller-Linux-3.0.3-x86_64 > SHA256SUMS.txt
       - name: Native Linux Electron install, loader, preload, uninstall and vanilla boot
         shell: bash
-        run: node "$SOLCORD_SOURCE/scripts/linuxInstaller/electron-smoke.mjs" "$SOLCORD_RELEASE"
+        run: node "$SOLCORD_SOURCE/scripts/linuxInstaller/electron-smoke.mjs" "$SOLCORD_RELEASE" "$RUNNER_TEMP/native-dist/SolcordInstaller-Linux-3.0.3-x86_64"
       - name: Retain the tested Linux package
         uses: actions/upload-artifact@v4
         with:
-          name: Solcord-Linux-3.0.2
-          path: linux/Solcord-Linux-3.0.2.tar.gz
+          name: Solcord-Linux-3.0.3
+          path: ${{ runner.temp }}/native-dist/*
           if-no-files-found: error
           retention-days: 30
