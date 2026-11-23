@@ -1191,6 +1191,54 @@ footer {
   border-radius: 2px;
 }
 
+/* OS Tabs */
+.os-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.os-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 18px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color 0.2s var(--ease), color 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+.os-tab-btn.active {
+  border-color: var(--border-mint);
+  color: var(--mint);
+  background: rgba(20, 241, 149, 0.07);
+}
+
+.os-tab-btn[data-os="linux"].active {
+  border-color: var(--border-purple);
+  color: var(--purple);
+  background: rgba(153, 69, 255, 0.07);
+}
+
+.os-tab-btn:hover:not(.active) {
+  border-color: rgba(255,255,255,0.15);
+  color: var(--text);
+}
+
+.os-panel {
+  display: none;
+}
+
+.os-panel.active {
+  display: block;
+}
+
 /* Native video player */
 .native-video-wrap {
   border-radius: 14px;
@@ -1246,11 +1294,11 @@ footer {
       <span>solcord</span>
     </a>
     <div class="nav-links">
-      <a href="#features">650+ plugins</a>
-      <a href="#install">install</a>
-      <a href="#updates">v3.0.0</a>
-      <a href="#faq">faq</a>
+      <a href="#features">features</a>
+      <a href="#download">download</a>
+      <a href="#updates">changelog</a>
       <a href="#mobile">mobile</a>
+      <a href="#faq">faq</a>
     </div>
     <div class="nav-right">
       <button class="audio-pill" id="audio-toggle" type="button" aria-pressed="false" title="toggle background track">
@@ -1260,7 +1308,11 @@ footer {
       <a class="gh-link" href="https://github.com/avyxl/SolCord" target="_blank" rel="noopener noreferrer" aria-label="github">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .8A11.2 11.2 0 0 0 8.5 22.6c.6.1.8-.2.8-.5v-2.2c-3.3.7-4-1.4-4-1.4-.5-1.3-1.2-1.6-1.2-1.6-1.1-.7.1-.7.1-.7 1.1.1 1.7 1.2 1.7 1.2 1 1.7 2.6 1.2 3.3.9.1-.8.4-1.2.7-1.5-2.6-.3-5.4-1.3-5.4-5.8 0-1.3.5-2.3 1.2-3.2-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2A11 11 0 0 1 12 5.5c1 0 2 .1 2.9.4 2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.9 1.2 1.9 1.2 3.2 0 4.5-2.8 5.5-5.5 5.8.4.4.8 1.1.8 2.2v3.1c0 .3.2.6.8.5A11.2 11.2 0 0 0 12 .8Z"/></svg>
       </a>
-      <a class="btn primary sm download-link" href="https://drive.google.com/uc?export=download&amp;id=1yHqvhgix0jgqmE3wO5ea-wkWAYhvS7Ms">download</a>
+      <a class="btn primary sm download-link-windows" href="https://drive.google.com/uc?export=download&amp;id=1F9jfDBhyZRpp-7Cv8F6ecQQNZjdYHYQb">
+        <span class="win-grid" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        windows
+      </a>
+      <a class="btn sm download-link-linux" href="https://drive.google.com/uc?export=download&amp;id=1cTZyj25Kwfyf3iHnPdgfytJXaO6FsSGg" style="border-color:var(--border-mint);color:var(--mint);">linux</a>
     </div>
   </nav>
 </header>
@@ -1279,9 +1331,13 @@ footer {
         </h1>
         <p class="hero-lead hero-anim d2">650+ plugins, signed automatic updates, a redesigned windows installer, and lazy-loaded workspaces for zero startup bloat.</p>
         <div class="hero-cta hero-anim d3">
-          <a class="btn primary download-link" href="https://drive.google.com/uc?export=download&amp;id=1yHqvhgix0jgqmE3wO5ea-wkWAYhvS7Ms">
+          <a class="btn primary download-link-windows" href="https://drive.google.com/uc?export=download&amp;id=1F9jfDBhyZRpp-7Cv8F6ecQQNZjdYHYQb">
             <span class="win-grid" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-            download v3.0.0
+            windows v3.0.0
+          </a>
+          <a class="btn download-link-linux" href="https://drive.google.com/uc?export=download&amp;id=1cTZyj25Kwfyf3iHnPdgfytJXaO6FsSGg" style="border-color:var(--border-mint);color:var(--mint);">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+            linux v3.0.0
           </a>
           <a class="btn" href="https://discord.gg/solcord" target="_blank" rel="noopener noreferrer">discord</a>
         </div>
@@ -1324,7 +1380,7 @@ footer {
         <span class="live-time" id="online-caption"></span>
       </div>
       <div class="telemetry-stats">
-        <b>v3.0.0</b> · 650+ plugins · signed auto-updates · win32
+        <b>v3.0.0</b> · 650+ plugins · signed auto-updates · windows &amp; linux
       </div>
     </div>
   </div>
@@ -1332,7 +1388,7 @@ footer {
   <section class="section" id="features">
     <div class="wrap">
       <div class="section-label reveal">
-        <span><span>01</span> / arsenal</span>
+        <span><span>01</span> / features</span>
         <span class="sub-mono">650+ modules · +144 in 3.0</span>
       </div>
       <div class="bento reveal">
@@ -1389,34 +1445,84 @@ footer {
     </div>
   </section>
 
-  <section class="section" id="install">
+  <section class="section" id="download">
     <div class="wrap">
+      <div class="section-label reveal">
+        <span><span>02</span> / download &amp; install</span>
+        <span class="sub-mono">windows · linux</span>
+      </div>
       <div class="install-panel reveal">
-        <div class="install-top">
-          <div>
-            <h2>install solcord 3.0.0</h2>
-            <p>install this version once to receive the new signed auto-updater</p>
-          </div>
-          <a class="btn primary download-link" href="https://drive.google.com/uc?export=download&amp;id=1yHqvhgix0jgqmE3wO5ea-wkWAYhvS7Ms">
+        <!-- OS Tab switcher -->
+        <div class="os-tabs">
+          <button class="os-tab-btn active" data-os="windows" type="button">
             <span class="win-grid" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-            download v3.0.0
-          </a>
+            Windows
+          </button>
+          <button class="os-tab-btn" data-os="linux" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+            Linux
+          </button>
         </div>
-        <div class="steps">
-          <div class="step">
-            <span class="step-idx">01</span>
-            <h3>extract</h3>
-            <p>unpack the archive to any folder.</p>
+
+        <!-- Windows panel -->
+        <div class="os-panel active" id="os-panel-windows">
+          <div class="install-top">
+            <div>
+              <h2>install solcord 3.0.0 — windows</h2>
+              <p>install once to receive the new signed auto-updater. future updates arrive silently.</p>
+            </div>
+            <a class="btn primary download-link-windows" href="https://drive.google.com/uc?export=download&amp;id=1F9jfDBhyZRpp-7Cv8F6ecQQNZjdYHYQb">
+              <span class="win-grid" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+              download for windows
+            </a>
           </div>
-          <div class="step">
-            <span class="step-idx">02</span>
-            <h3>quit discord</h3>
-            <p>exit discord completely, including the system tray.</p>
+          <div class="steps">
+            <div class="step">
+              <span class="step-idx">01</span>
+              <h3>extract</h3>
+              <p>unpack the archive to any folder.</p>
+            </div>
+            <div class="step">
+              <span class="step-idx">02</span>
+              <h3>quit discord</h3>
+              <p>exit discord completely, including the system tray.</p>
+            </div>
+            <div class="step">
+              <span class="step-idx">03</span>
+              <h3>run installer</h3>
+              <p>run the redesigned installer; signed updates arrive automatically every 15 min.</p>
+            </div>
           </div>
-          <div class="step">
-            <span class="step-idx">03</span>
-            <h3>install once</h3>
-            <p>run the redesigned installer; future signed updates arrive automatically.</p>
+        </div>
+
+        <!-- Linux panel -->
+        <div class="os-panel" id="os-panel-linux">
+          <div class="install-top">
+            <div>
+              <h2>install solcord 3.0.0 — linux</h2>
+              <p>extract and run the installer script. the signed updater handles future releases.</p>
+            </div>
+            <a class="btn download-link-linux" href="https://drive.google.com/uc?export=download&amp;id=1cTZyj25Kwfyf3iHnPdgfytJXaO6FsSGg" style="border-color:var(--border-mint);color:var(--mint);background:rgba(20,241,149,0.08);">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zM5 18h14v2H5v-2z"/></svg>
+              download for linux
+            </a>
+          </div>
+          <div class="steps">
+            <div class="step">
+              <span class="step-idx">01</span>
+              <h3>extract</h3>
+              <p>unpack the tarball to your desired directory.</p>
+            </div>
+            <div class="step">
+              <span class="step-idx">02</span>
+              <h3>quit discord</h3>
+              <p>close discord fully — check the system tray or run <code style="font-family:var(--font-mono);color:var(--mint)">killall Discord</code>.</p>
+            </div>
+            <div class="step">
+              <span class="step-idx">03</span>
+              <h3>run installer</h3>
+              <p>execute the install script. signed updates will be applied automatically.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -1426,7 +1532,7 @@ footer {
   <section class="section" id="updates">
     <div class="wrap">
       <div class="section-label reveal">
-        <span><span>02</span> / solcord 3.0 update</span>
+        <span><span>03</span> / changelog</span>
         <span class="sub-mono">v3.0.0</span>
       </div>
       <div class="changelog-grid reveal">
@@ -1457,7 +1563,7 @@ footer {
   <section class="section" id="faq" style="border-bottom:0">
     <div class="wrap bottom-grid reveal">
       <div class="team">
-        <div class="section-label" style="margin-bottom:4px"><span><span>03</span> / credits</span></div>
+        <div class="section-label" style="margin-bottom:4px"><span><span>05</span> / credits</span></div>
         <a class="person" href="https://avyxl.github.io/portfolio/" target="_blank" rel="noopener noreferrer">
           <img src="data:image/webp;base64,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" alt="avyxl">
           <div>
@@ -1507,7 +1613,7 @@ footer {
   <section class="section" id="mobile" style="border-bottom:0">
     <div class="wrap">
       <div class="section-label reveal">
-        <span><span>04</span> / mobile</span>
+        <span><span>04</span> / mobile &amp; ios</span>
         <span class="sub-mono">iOS · Android</span>
       </div>
 
@@ -1585,13 +1691,18 @@ footer {
   'use strict';
 
   const SOLCORD_CONFIG = Object.freeze({
-    downloadUrl: 'https://drive.google.com/uc?export=download&id=1yHqvhgix0jgqmE3wO5ea-wkWAYhvS7Ms',
+    downloadUrlWindows: 'https://drive.google.com/uc?export=download&id=1F9jfDBhyZRpp-7Cv8F6ecQQNZjdYHYQb',
+    downloadUrlLinux: 'https://drive.google.com/uc?export=download&id=1cTZyj25Kwfyf3iHnPdgfytJXaO6FsSGg',
     statsUrl: 'https://solcord-presence.adammohamedali01.workers.dev/v1/stats',
     audioUrl: './my%20rib.mp3'
   });
 
-  document.querySelectorAll('.download-link').forEach(function(link) {
-    link.href = SOLCORD_CONFIG.downloadUrl;
+  // Update all OS-specific download links
+  document.querySelectorAll('.download-link-windows').forEach(function(link) {
+    link.href = SOLCORD_CONFIG.downloadUrlWindows;
+  });
+  document.querySelectorAll('.download-link-linux').forEach(function(link) {
+    link.href = SOLCORD_CONFIG.downloadUrlLinux;
   });
 
   // Background song controller
@@ -1906,6 +2017,19 @@ footer {
 
   document.querySelectorAll('details summary').forEach(function(s) {
     s.addEventListener('click', function() { sfx('click'); }, { passive: true });
+  });
+
+  // ── OS tab switching (Windows / Linux) ────────────────────────────
+  document.querySelectorAll('.os-tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var os = btn.dataset.os;
+      document.querySelectorAll('.os-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.os-panel').forEach(function(p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      var panel = document.getElementById('os-panel-' + os);
+      if (panel) panel.classList.add('active');
+      sfx('click');
+    });
   });
 
   // ── Mobile tab switching ───────────────────────────────────────────
