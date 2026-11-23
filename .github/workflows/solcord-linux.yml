@@ -1,0 +1,70 @@
+name: Solcord Linux 3.0.2
+on:
+  push:
+    branches: [solcord/linux-3.0-commands-2026-11-23]
+    paths: [linux/**, .github/workflows/solcord-linux.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Unpack the matching client and corresponding source
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os,pathlib,tarfile,zipfile,shutil
+          workspace=pathlib.Path(os.environ['GITHUB_WORKSPACE'])
+          temp=pathlib.Path(os.environ['RUNNER_TEMP'])
+          with tarfile.open(workspace/'linux/Solcord-Linux-3.0.2.tar.gz') as archive:
+              archive.extractall(temp/'release',filter='data')
+          release=temp/'release/Solcord-Linux-3.0.2'
+          with zipfile.ZipFile(release/'Source/Solcord-3.0.2-source.zip') as archive:
+              for entry in archive.namelist():
+                  if pathlib.PurePosixPath(entry).is_absolute() or '..' in pathlib.PurePosixPath(entry).parts:raise RuntimeError('Unsafe source path')
+              archive.extractall(temp/'source')
+          source=temp/'source/Solcord-3.0.2'
+          (source/'dist').mkdir(exist_ok=True)
+          for name in ['patcher.js','preload.js','renderer.js','renderer.css']:
+              shutil.copyfile(release/'payload'/name,source/'dist'/name)
+          with open(os.environ['GITHUB_ENV'],'a') as env:
+              env.write('SOLCORD_SOURCE='+str(source)+'\nSOLCORD_RELEASE='+str(release)+'\n')
+          PY
+      - name: Install pinned test dependencies
+        shell: bash
+        run: |
+          npm install --prefix "$RUNNER_TEMP/solcord-deps" --no-audit --no-fund --package-lock=false esbuild@0.28.1 typescript@6.0.3 fflate@0.8.3 react@19.1.0 react-dom@19.1.0 @napi-rs/canvas@0.1.80 electron@41.2.1 @electron/asar@4.0.1
+          ln -s "$RUNNER_TEMP/solcord-deps/node_modules" "$SOLCORD_SOURCE/node_modules"
+      - name: Linux filesystem, rollback, symlink and process-lock tests
+        run: python3 "$SOLCORD_SOURCE/test/linux-installer.py"
+      - name: All packed plugins, deferred loading, commands and 3.0 services
+        shell: bash
+        run: |
+          cd "$SOLCORD_SOURCE"
+          node test/chunks-dynamic.mjs
+          node test/chunks.mjs --discord-only
+          node test/solcord-bot.mjs
+          node test/solcord3.mjs
+          node test/solcord3-native.mjs
+          node test/solcord3-voice.mjs
+          node test/solcord3-navigation.mjs
+          node test/solcord3-playback.mjs
+          node test/solcord3-reading.mjs
+      - name: Native Linux Electron install, loader, preload, uninstall and vanilla boot
+        shell: bash
+        run: node "$SOLCORD_SOURCE/scripts/linuxInstaller/electron-smoke.mjs" "$SOLCORD_RELEASE"
+      - name: Retain the tested Linux package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Solcord-Linux-3.0.2
+          path: linux/Solcord-Linux-3.0.2.tar.gz
+          if-no-files-found: error
+          retention-days: 30
