@@ -41,7 +41,8 @@ jobs:
       - name: Install pinned test dependencies
         shell: bash
         run: |
-          npm install --prefix "$RUNNER_TEMP/solcord-deps" --no-audit --no-fund --package-lock=false esbuild@0.28.1 typescript@6.0.3 fflate@0.8.3 react@19.1.0 react-dom@19.1.0 @napi-rs/canvas@0.1.80 electron@41.2.1 @electron/asar@4.0.1
+          npm install --prefix "$RUNNER_TEMP/solcord-deps" --no-audit --no-fund --package-lock=false esbuild@0.28.1 typescript@6.0.3 diff@9.0.0 fflate@0.8.3 react@19.1.0 react-dom@19.1.0 @napi-rs/canvas@0.1.80 electron@41.2.1 @electron/asar@4.0.1
+          node "$RUNNER_TEMP/solcord-deps/node_modules/electron/install.js"
           ln -s "$RUNNER_TEMP/solcord-deps/node_modules" "$SOLCORD_SOURCE/node_modules"
       - name: Linux filesystem, rollback, symlink and process-lock tests
         run: python3 "$SOLCORD_SOURCE/test/linux-installer.py"
