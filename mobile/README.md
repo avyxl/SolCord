@@ -4,11 +4,12 @@
 
 # Solcord Mobile
 
+Current release: **1.2.0**. See [release and upgrade notes](docs/MOBILE-1.2.0.md). Developed by [avyxl](https://avyxl.github.io/portfolio/).
+
 **Plugins, themes and privacy for the Discord app on your Android phone, iPhone and iPad**
 
-[![Download for Android](https://img.shields.io/badge/Download-Android%20APK-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/avyxl/SolCord/releases/download/next-installer-v1.0.3/solcord-installer-v1.0.3.apk)
-[![Download for iOS](https://img.shields.io/badge/Download-iOS%20IPA-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/avyxl/SolCord/releases/download/ios-v1.0.8/Solcord.ipa)
-[![Join the Discord](https://img.shields.io/badge/Discord-Join%20us-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/BNapnPqGku)
+[![Downloads](https://img.shields.io/badge/Download-Solcord-9945FF?style=for-the-badge)](https://solcord.site)
+[![Join the Discord](https://img.shields.io/badge/Discord-Join%20us-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/solcord)
 
 ![Plugins](https://img.shields.io/badge/plugins-362-5865F2)
 ![Android](https://img.shields.io/badge/Android-9%2B-3DDC84?logo=android&logoColor=white)
@@ -17,12 +18,12 @@
 ![Languages](https://img.shields.io/badge/languages-5-F59E0B)
 ![License](https://img.shields.io/badge/license-GPL--3.0-blue)
 
-[Website](https://solcord.com) · [Solcord PC](https://github.com/Solcord/Solcord) · [Solcord Classic](https://github.com/avyxl/SolCord/tree/main) · [Plugin list](docs/PLUGINS.md)
+[Website](https://solcord.site) · [Solcord PC](https://github.com/avyxl/SolCord) · [Plugin list](docs/PLUGINS.md)
 
 </div>
 
 Solcord is on every platform: this repository is the mobile app for **Android** and **iOS / iPadOS**, and
-[Solcord PC](https://github.com/Solcord/Solcord) covers **Windows, macOS, Linux and the web**.
+[Solcord PC](https://github.com/avyxl/SolCord) is the separate desktop project.
 
 | | Android | iOS and iPadOS |
 | --- | --- | --- |
@@ -42,7 +43,7 @@ Both run the same Solcord, from [`bundle/`](bundle), so plugins and themes work 
   work Discord can punish say so, and ask before they turn on. See the [full list](docs/PLUGINS.md).
 - **Custom profiles everyone sees.** A profile made with CustomProfile is shared with every Solcord user, on phones and
   on Solcord PC, through the Solcord server, and theirs show to you.
-- **Themes and fonts.** Solcord's own theme, with the sleeping panda in the chat, and eight more from Solcord PC's
+- **Themes and fonts.** Solcord's own theme and eight more from Solcord PC's
   Theme Studio, each one tap away and readable in dark and light. Eight suggested fonts. Browse community themes and
   Catppuccin without leaving the app, or add your own. The status bar follows your theme.
 - **Private by default.** NoTrack is on from the start, so Discord's analytics, telemetry and crash reports are never
