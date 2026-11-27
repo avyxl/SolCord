@@ -71,13 +71,12 @@ Both run the same Solcord, from [`bundle/`](bundle), so plugins and themes work 
 
 No root needed. Solcord installs next to Discord as a separate app, and your Discord stays exactly as it is.
 
-1. Download **[Solcord Installer](https://github.com/avyxl/SolCord/releases/download/next-installer-v1.0.3/solcord-installer-v1.0.3.apk)**
+1. Download **SolcordInstaller-Android-1.2.0.apk** from this release
    and open it. If Android asks, allow your browser to install apps.
 2. In **Solcord Installer**, tap **Install**. It uses the Discord on your phone, or downloads the latest one.
 3. Open **Solcord** and sign in. Solcord's settings are in Discord's settings, under **Solcord**.
 
-Requires Android 9 or newer. If Google Play Protect warns about the installer, tap **More details → Install anyway**:
-it warns about every app that doesn't come from the Play Store.
+Requires Android 9 or newer. After updating the installer, run its install/update flow to refresh the loader in the installed Solcord app as well.
 
 <details>
 <summary><b>Rooted? Run Solcord inside the real Discord with LSPosed</b></summary>
@@ -98,7 +97,7 @@ Nothing is reinstalled: the Play Store Discord runs Solcord.
 
 No jailbreak needed. iOS 16 or newer.
 
-1. Download **[Solcord.ipa](https://github.com/avyxl/SolCord/releases/download/ios-v1.0.8/Solcord.ipa)**.
+1. Download **Solcord-iOS-1.2.0.ipa** from this release.
 2. Install it with one of these:
    - **[Sideloadly](https://sideloadly.io)** on a computer, with your own Apple ID. Change the bundle ID in its advanced
      options if you want to keep the App Store Discord too.

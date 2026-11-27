@@ -127,7 +127,7 @@ def dismiss_dialogs():
 
 
 def install_flow(source):
-    """Endcord Installer from its home screen to an installed Endcord."""
+    """Solcord Installer from its home screen to an installed Solcord."""
     screenshot(f"installer-{source}-0-home")
     dismiss_dialogs()
     if source == "installed":

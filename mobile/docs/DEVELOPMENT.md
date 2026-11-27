@@ -1,5 +1,9 @@
 # Developing Solcord Mobile
 
+For the 1.2.0 refresh, the source lives in `mobile/` on the SolCord repository's mobile build branch. The root `solcord-mobile-ios.yml` workflow packages the IPA on macOS; a copy is included under `workflows/` in the source archive. See [current release notes](MOBILE-1.2.0.md). The older release/branch examples below describe the upstream layout, not an automatic publication performed by this rebuild.
+
+Installer JVM unit tests require Java 21 or later for their binary-resource dependency. When using JDK 17 to run Gradle, set `SOLCORD_TEST_JAVA` to a Java 21+ executable. Release native loaders must receive an increasing bundled release timestamp as described in the current release notes.
+
 Solcord Mobile, for Android and iOS, is a fork of [Revenge](https://github.com/revenge-mod) and lives on the `next` branch of
 `solcord-mobile`, next to the classic-app Solcord on `main`; the two are separate apps and separate code.
 [UPSTREAM.md](../UPSTREAM.md) lists the exact upstream commits.
