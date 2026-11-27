@@ -116,6 +116,11 @@ class CustomBundleUrlWaitingTest {
 
         bundle.writeText("published")
         etag.writeText(BuildConfig.BUNDLE_URL)
+        if (BuildConfig.REQUIRE_SIGNED) {
+            // A pending custom link must never make an unsigned published cache trusted.
+            assertFalse(RevengeUpdater.hasUsableBundle())
+            return
+        }
         assertTrue(RevengeUpdater.hasUsableBundle())
         RevengeUpdater.beforeBundleLoad()
         RevengeUpdater.noteLoaded("downloaded")
@@ -162,9 +167,9 @@ class CustomBundleUrlWaitingTest {
         bundle.writeText("from the custom link")
         etag.writeText(custom)
         assertFalse(RevengeUpdater.hasUsableBundle())
-        // One whose source isn't known (an older loader's, or after a rollback) still runs as before
+        // Unknown-source bytes still require the release signature in a strict build.
         etag.delete()
-        assertTrue(RevengeUpdater.hasUsableBundle())
+        assertEquals(!BuildConfig.REQUIRE_SIGNED, RevengeUpdater.hasUsableBundle())
     }
 
     @Test
