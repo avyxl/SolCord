@@ -32,4 +32,14 @@ The client passes its test suite and TypeScript checks. The iOS workflow compile
 
 Android unit checks and release startup validation results are recorded with the build artifacts. No Discord account credentials are used for automated launch checks. If a particular phone still closes at startup, its model, OS version and crash log are needed to distinguish an installer failure from a Discord/native-loader failure.
 
+Release validation completed:
+
+- All 33 client test runs and the TypeScript check passed, including actual desktop/mobile profile reader and publisher interoperability.
+- The final iOS package passed native compilation, JSI compatibility checks, temporary signatures and strict resource-seal validation in [build 46071735103](https://github.com/avyxl/SolCord/actions/runs/46071735103).
+- Android installer first launch, offline cold start and recovery from invalid restored preferences passed on Android 10 and Android 15 emulators.
+- The corrected signed release installer successfully patched an installed Discord 355.10, installed Solcord and opened its welcome/login screen on Android 15, staying open through the observation period. The native loader loaded the bundled client. Installer offline and restored-preference checks also passed in the [final run 46074686153](https://github.com/avyxl/SolCord/actions/runs/46074686153).
+- Android signing regressions passed: a provider closing its stream, interrupted serialization and preservation of an existing signing identity.
+
+Live profile publishing with a signed-in Discord account, physical iPhone use and the reported Samsung handset were not tested in this automated run. The remote APK mirror had an intermittent connection failure during a separate download-path check; the completed installation test used the Discord already on the emulator, matching the installer's installed-app option.
+
 Private keys, keystores, account tokens and dependency caches are excluded from the shared source archive. Original upstream licensing notices remain in the source.
