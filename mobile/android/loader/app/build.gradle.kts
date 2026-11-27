@@ -15,8 +15,8 @@ android {
         applicationId = "com.solcord.xposed"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 1001000
-        versionName = "1.1.0"
+        versionCode = 1002000
+        versionName = "1.2.0"
 
         // The published bundle. Pass -Psolcord.bundleUrl=http://10.0.2.2:4040/solcord.min.js to test a local build.
         val bundleUrl = providers.gradleProperty("solcord.bundleUrl")
@@ -32,6 +32,9 @@ android {
         buildConfigField("String", "RELEASE_KEY", "\"$releaseKey\"")
         val requireSigned = providers.gradleProperty("solcord.requireSigned").orElse("true").get().toBoolean()
         buildConfigField("boolean", "REQUIRE_SIGNED", requireSigned.toString())
+        val bundledSequence = providers.gradleProperty("solcord.bundledSequence").orElse("0").get().toLong()
+        require(bundledSequence >= 0)
+        buildConfigField("long", "BUNDLED_SEQUENCE", "${bundledSequence}L")
         buildConfigField("boolean", "HAS_BUNDLED_CLIENT", file("src/main/assets/revenge.bundle").isFile.toString())
     }
 

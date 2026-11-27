@@ -246,7 +246,7 @@ object RevengeUpdater {
     private fun savedReleaseLists(bytes: ByteArray): Boolean {
         if (!releaseManifest.isFile || !releaseSignature.isFile) return false
         val release = BundleRelease.parse(releaseManifest.readBytes(), releaseSignature.readBytes()) ?: return false
-        return release.lists(publishedName(bytes), bytes)
+        return release.sequence >= acceptedSequence() && release.lists(publishedName(bytes), bytes)
     }
 
     /**
@@ -277,7 +277,7 @@ object RevengeUpdater {
     }
 
     /** The highest release sequence accepted: the larger of its copies ([ReleaseSequence]) */
-    fun acceptedSequence(): Long = if (::releaseSequence.isInitialized) releaseSequence.accepted() else 0L
+    fun acceptedSequence(): Long = maxOf(BuildConfig.BUNDLED_SEQUENCE, if (::releaseSequence.isInitialized) releaseSequence.accepted() else 0L)
 
     /**
      * Just before the downloaded bundle runs: counts the load, and puts the previous bundle back when the new one didn't

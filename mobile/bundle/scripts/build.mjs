@@ -25,6 +25,7 @@ const metroDeps = await (async () => {
 })();
 
 const args = yargs(process.argv.slice(2));
+const bundledSequence = Number(process.env.SOLCORD_BUNDLED_SEQUENCE) || Math.floor(Date.now() / 1000);
 const {
     "release-branch": releaseBranch,
     "build-minify": buildMinify,
@@ -53,7 +54,7 @@ const config = {
         "const-and-let": false
     },
     footer: {
-        js: "//# sourceURL=revenge"
+        js: "//# sourceURL=solcord"
     },
     loader: {
         ".png": "dataurl",
@@ -64,6 +65,7 @@ const config = {
         // Published builds (main and next) are release builds; local and branch builds keep the developer tools
         __DEV__: dev ?? JSON.stringify(!["main", "next"].includes(releaseBranch)),
         __SOLCORD_TEST__: JSON.stringify(!!test),
+        __SOLCORD_BUNDLED_SEQUENCE__: JSON.stringify(bundledSequence),
         __BUILDS_BRANCH__: JSON.stringify(buildsBranch)
     },
     inject: ["./shims/asyncIteratorSymbol.js", "./shims/promiseAllSettled.js"],
@@ -95,7 +97,7 @@ const config = {
                                 constModules: {
                                     globals: {
                                         "bunny-build-info": {
-                                            version: `"${context.hash}-${releaseBranch ?? "local"}"`
+                                            version: `"1.2.0+${context.hash}"`
                                         }
                                     }
                                 },

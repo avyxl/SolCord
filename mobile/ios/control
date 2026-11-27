@@ -1,6 +1,6 @@
 Package: com.solcord.tweak
 Name: Solcord
-Version: 1.1.0
+Version: 1.2.0
 Architecture: iphoneos-arm
 Description: Solcord for Discord on iOS: plugins, themes and privacy
 Maintainer: avyxl

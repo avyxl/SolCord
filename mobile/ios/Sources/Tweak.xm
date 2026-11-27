@@ -146,7 +146,11 @@ static NSString *const kReleaseSequenceKey = @"SolcordReleaseSequence";
 static unsigned long long acceptedSequence(void)
 {
     id stored = [NSUserDefaults.standardUserDefaults objectForKey:kReleaseSequenceKey];
-    return [stored isKindOfClass:NSNumber.class] ? [stored unsignedLongLongValue] : 0;
+    unsigned long long accepted = [stored isKindOfClass:NSNumber.class] ? [stored unsignedLongLongValue] : 0;
+#ifdef SOLCORD_BUNDLED_SEQUENCE
+    accepted = MAX(accepted, (unsigned long long) SOLCORD_BUNDLED_SEQUENCE);
+#endif
+    return accepted;
 }
 
 /**
@@ -171,7 +175,7 @@ static BOOL savedBundleIsSigned(NSData *bundle)
     });
     if (!manifest || !signature) return unsignedBundleAllowed();
     BundleRelease *release = [BundleRelease releaseWithManifest:manifest signature:signature];
-    return [release lists:publishedName(bundle) bytes:bundle];
+    return release && release.sequence >= acceptedSequence() && [release lists:publishedName(bundle) bytes:bundle];
 }
 
 /**

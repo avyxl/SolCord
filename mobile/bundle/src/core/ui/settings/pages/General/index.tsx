@@ -1,6 +1,6 @@
 import { isSafeMode, toggleSafeMode } from "@core/debug/safeMode";
 import { getLanguage, LANGUAGES, Strings, t } from "@core/i18n";
-import { SolcordIcon } from "@core/ui/settings";
+import { SolcordLogo } from "@core/ui/settings/Logo";
 import About from "@core/ui/settings/pages/General/About";
 import Backup from "@core/ui/settings/pages/General/Backup";
 import Updates from "@core/ui/settings/pages/General/Updates";
@@ -13,9 +13,9 @@ import { openAlert } from "@lib/ui/alerts";
 import { DISCORD_SERVER, GITHUB } from "@lib/utils/constants";
 import { openSafeLink } from "@lib/utils/externalLinks";
 import { NavigationNative } from "@metro/common";
-import { AlertActionButton, AlertActions, AlertModal, Stack, TableRadioGroup, TableRadioRow, TableRow, TableRowGroup, TableSwitchRow } from "@metro/common/components";
+import { AlertActionButton, AlertActions, AlertModal, Stack, TableRadioGroup, TableRadioRow, TableRow, TableRowGroup, TableSwitchRow, Text } from "@metro/common/components";
 import { useEdgeInsets } from "@ui/insets";
-import { ScrollView } from "react-native";
+import { ScrollView, View } from "react-native";
 
 export default function General() {
     useProxy(settings);
@@ -27,10 +27,20 @@ export default function General() {
     return (
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 38 + bottom }}>
             <Stack style={{ paddingVertical: 24, paddingHorizontal: 12 }} spacing={24}>
+                <View style={{ padding: 20, backgroundColor: "#15111f", borderRadius: 20, borderWidth: 1, borderColor: "#3c2b55" }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+                        <SolcordLogo size={56} />
+                        <View style={{ flex: 1 }}>
+                            <Text variant="heading-xl/bold" style={{ color: "#f4f1fa" }}>Solcord Mobile</Text>
+                            <Text variant="text-sm/medium" style={{ color: "#62e7bc", marginTop: 4 }}>1.2.0 · Developed by avyxl</Text>
+                        </View>
+                    </View>
+                    <Text variant="text-sm/normal" style={{ color: "#c6bfd4", marginTop: 16 }}>Your profiles, badges and tools. Built for your phone.</Text>
+                </View>
                 <TableRowGroup title={Strings.INFO}>
                     <TableRow
                         label={Strings.BUNNY}
-                        icon={<TableRow.Icon source={{ uri: SolcordIcon }} />}
+                        icon={<SolcordLogo />}
                         trailing={<TableRow.TrailingText text={debugInfo.bunny.version} />}
                     />
                     <TableRow
@@ -47,6 +57,9 @@ export default function General() {
                             render: () => <About />,
                         })}
                     />
+                </TableRowGroup>
+                <TableRowGroup title="What’s new">
+                    <TableRow arrow label="Mobile 1.2.0" subLabel="Shared Solcord profiles, refreshed settings and loader fixes" icon={<TableRow.Icon source={findAssetId("SparklesIcon") ?? findAssetId("CircleInformationIcon-primary")} />} onPress={() => navigation.push("BUNNY_CUSTOM_PAGE", { title: "Solcord changelog", render: () => { const Changelog = require("./Changelog").default; return <Changelog />; } })} />
                 </TableRowGroup>
                 <Updates />
                 <TableRadioGroup

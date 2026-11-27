@@ -1,5 +1,5 @@
 export const DISCORD_SERVER = "https://discord.gg/solcord";
-export const GITHUB = "https://github.com/avyxl/SolCord/tree/next";
+export const GITHUB = "https://github.com/avyxl/SolCord";
 /** Solcord Classic: Aliucord-based, on an older Discord, with Aliucord plugin support */
 export const CLASSIC_URL = "https://github.com/avyxl/SolCord/tree/main";
 /** Where the Build workflow publishes Solcord for the current Discord app */

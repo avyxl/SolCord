@@ -45,7 +45,7 @@ export function patchTabsUI(unpatches: (() => void | boolean)[]) {
                 useTitle: row.title,
                 title: row.title,
                 icon: row.icon,
-                IconComponent: () => <TableRow.Icon source={row.icon} />,
+                IconComponent: row.IconComponent ?? (() => <TableRow.Icon source={row.icon} />),
                 usePredicate: row.usePredicate,
                 useTrailing: row.useTrailing,
                 onPress: wrapOnPress(row.onPress, null, row.render, row.title()),

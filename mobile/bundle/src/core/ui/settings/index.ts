@@ -1,4 +1,5 @@
 import SolcordIcon from "@assets/icons/solcord.png";
+import { SolcordLogo } from "./Logo";
 import { Strings, t } from "@core/i18n";
 import { useProxy } from "@core/vendetta/storage";
 import { findAssetId } from "@lib/api/assets";
@@ -18,6 +19,7 @@ export default function initSettings() {
                 key: "BUNNY",
                 title: () => Strings.BUNNY,
                 icon: { uri: SolcordIcon },
+                IconComponent: SolcordLogo,
                 render: () => import("@core/ui/settings/pages/General"),
                 useTrailing: () => `(${version})`
             },

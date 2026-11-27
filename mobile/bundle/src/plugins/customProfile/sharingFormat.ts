@@ -9,14 +9,15 @@
  *
  * Everyone's client reads these messages, so what one may say is checked strictly when it's read: only the fields a
  * shared profile may set, each of the right type and size; pictures only from Discord's own servers, since a link to
- * anywhere else would tell a stranger who looked at the profile; and never an email, phone number or account creation
- * date.
+ * anywhere else would tell a stranger who looked at the profile; and never an email or phone number.
  */
 
 import type { CustomProfileData } from "./data";
 
 /** Starts every profile message, with the format's version, so a later format can sit next to this one */
-export const PREFIX = "ecp1 ";
+export const PREFIX = "solcord2 ";
+export const LEGACY_PREFIX = "ecp1 ";
+const encodeProfile = (data: unknown) => PREFIX + JSON.stringify({ kind: "profile", data });
 /** Discord's limit for a message */
 export const MAX_CONTENT = 2000;
 
@@ -40,12 +41,12 @@ const HIDDEN_IN_BIO = /[\u0000-\u0009\u000b-\u001f\u007f\u200b-\u200f\u2060\u202
 const isObjectsOwnName = (key: string) => key in {} || UNSAFE_KEYS.has(key);
 
 /** What never leaves this phone: only you see these, as on Solcord PC */
-const PRIVATE_KEYS = ["email", "phone", "createdAt", "copiedUserId"] as const;
+const PRIVATE_KEYS = ["email", "phone", "copiedUserId"] as const;
 
 /** Every field a shared profile may set, as on Solcord PC */
 export const SHARED_KEYS = [
     "username", "globalName", "bio", "pronouns", "oldName", "avatar", "banner", "accentColor", "accentColor2", "badgeFlags",
-    "nitroLevel", "nitroSince", "boostMonths", "nitro", "decorationAsset", "profileEffectId", "profileFrameId",
+    "nitroLevel", "nitroSince", "createdAt", "boostMonths", "nitro", "decorationAsset", "profileEffectId", "profileFrameId",
     "customBadgeIds", "tieredBadges", "nameplate", "displayNameStyles",
 ] as const;
 
@@ -75,9 +76,13 @@ export function sanitizeShared(raw: unknown): CustomProfileData | null {
     set("banner", matching(text(r.banner, MAX_PICTURE_LINK), DISCORD_CDN));
     set("accentColor", int(r.accentColor, 0, 0xFFFFFF));
     set("accentColor2", int(r.accentColor2, 0, 0xFFFFFF));
-    set("badgeFlags", int(r.badgeFlags, 0, 2 ** 31 - 1));
+    const flags = int(r.badgeFlags, 0, 2 ** 31 - 1);
+    const badgeBits = 1 | 2 | 4 | 8 | 64 | 128 | 256 | 512 | 16384 | 131072 | 262144 | 4194304;
+    if (flags !== undefined && (flags & badgeBits)) out.badgeFlags = flags & badgeBits;
     set("nitroLevel", int(r.nitroLevel, 0, 20));
-    set("nitroSince", matching(r.nitroSince, DATE));
+    const calendarDay = (value: unknown) => { const day = matching(value, DATE); if (!day) return undefined; const date = new Date(day + "T12:00:00Z"); return !Number.isNaN(date.getTime()) && date.toISOString().startsWith(day) ? day : undefined; };
+    set("nitroSince", calendarDay(r.nitroSince));
+    set("createdAt", calendarDay(r.createdAt));
     set("boostMonths", int(r.boostMonths, 0, 30));
     if (typeof r.nitro === "boolean") out.nitro = r.nitro;
     // It ends up in a link, and Discord's decorations are a hash or a shop number: no dots, and no name of an object's own
@@ -132,10 +137,17 @@ export type Attachments = { filename: string; url: string; }[];
  * its author's newest message, it takes the place of the one before
  */
 export function readProfileMessage(content: string, attachments: Attachments = []): CustomProfileData | null {
-    if (typeof content !== "string" || !content.startsWith(PREFIX)) return null;
+    if (typeof content !== "string" || content.length > MAX_CONTENT) return null;
+    const prefix = content.startsWith(PREFIX) ? PREFIX : content.startsWith(LEGACY_PREFIX) ? LEGACY_PREFIX : null;
+    if (!prefix) return null;
     let raw: any;
     try {
-        raw = JSON.parse(content.slice(PREFIX.length));
+        raw = JSON.parse(content.slice(prefix.length));
+        if (prefix === PREFIX) {
+            if (!isRecord(raw) || raw.kind !== "profile" || !Object.prototype.hasOwnProperty.call(raw, "data")) return null;
+            raw = raw.data;
+            if (raw === null) return {};
+        }
     } catch {
         return null;
     }
@@ -150,7 +162,7 @@ export function readProfileMessage(content: string, attachments: Attachments = [
 }
 
 /** The message that takes a shared profile back: an empty profile, read as one by every Solcord client */
-export const EMPTY_PROFILE_MESSAGE = `${PREFIX}{}`;
+export const EMPTY_PROFILE_MESSAGE = encodeProfile(null);
 
 /** Whether a profile has nothing in it to show */
 export const isEmptyProfile = (data: CustomProfileData | null | undefined) => !data || Object.keys(data).length === 0;
@@ -204,14 +216,14 @@ export function writeProfileMessage(data: CustomProfileData) {
         if (!DISCORD_CDN.test(value) || value.length > MAX_PICTURE_LINK) delete shared[key];
     }
 
-    let content = PREFIX + JSON.stringify(shared);
+    let content = encodeProfile(shared);
     if (content.length > MAX_CONTENT && typeof shared.bio === "string") {
         shared.bio = shared.bio.slice(0, Math.max(0, shared.bio.length - (content.length - MAX_CONTENT) - 1));
-        content = PREFIX + JSON.stringify(shared);
+        content = encodeProfile(shared);
     }
     if (content.length > MAX_CONTENT) {
         delete shared.bio;
-        content = PREFIX + JSON.stringify(shared);
+        content = encodeProfile(shared);
     }
     return { content, pictures, fits: content.length <= MAX_CONTENT };
 }
@@ -219,9 +231,10 @@ export function writeProfileMessage(data: CustomProfileData) {
 /** The same message without the pictures that couldn't be uploaded, which then stay on this phone */
 export function withoutPictures(content: string, keys: SharedPicture["key"][]) {
     if (!keys.length || !content.startsWith(PREFIX)) return content;
-    const shared = JSON.parse(content.slice(PREFIX.length));
-    for (const key of keys) delete shared[key];
-    return PREFIX + JSON.stringify(shared);
+    const record = JSON.parse(content.slice(PREFIX.length));
+    if (!isRecord(record) || record.kind !== "profile" || !isRecord(record.data)) return content;
+    for (const key of keys) delete record.data[key];
+    return encodeProfile(record.data);
 }
 
 /** Short, and the same for the same profile: what was shared, without keeping a copy of it. As on Solcord PC */

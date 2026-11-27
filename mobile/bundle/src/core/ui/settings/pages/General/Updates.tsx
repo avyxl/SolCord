@@ -11,7 +11,6 @@ import { showToast } from "@lib/ui/toasts";
 import { safeFetch } from "@lib/utils";
 import { BUILDS_URL } from "@lib/utils/constants";
 import { TableRow, TableRowGroup } from "@metro/common/components";
-import { version } from "bunny-build-info";
 import { useState } from "react";
 
 type State =
@@ -27,14 +26,14 @@ type State =
  */
 export default function Updates() {
     const [state, setState] = useState<State>({ kind: "idle" });
-    const [hash] = version.split("-");
+    const installedSequence = __SOLCORD_BUNDLED_SEQUENCE__;
 
     const check = async () => {
         setState({ kind: "checking" });
         try {
-            const info = await safeFetch(`${BUILDS_URL}/data.json?t=${Date.now()}`, { cache: "no-store" }).then(r => r.json());
-            if (typeof info?.commit !== "string") throw new Error("No build information");
-            if (info.commit.startsWith(hash)) {
+            const info = await safeFetch(`${BUILDS_URL}/solcord-release.json?t=${Date.now()}`, { cache: "no-store" }).then(r => r.json());
+            if (info?.format !== 1 || !Number.isSafeInteger(info?.sequence) || info.sequence < 0) throw new Error("No current release information");
+            if (info.sequence <= installedSequence) {
                 setState({ kind: "current" });
                 showToast(t("No updates found"), findAssetId("CheckmarkLargeIcon"));
             } else {
@@ -46,7 +45,7 @@ export default function Updates() {
     };
 
     const status = {
-        idle: t("Solcord updates itself every time the app starts."),
+        idle: t("Installed mobile client: 1.2.0. Verified updates are checked when the app starts."),
         checking: t("Loading..."),
         current: t("Up to date"),
         available: t("There is 1 Update"),

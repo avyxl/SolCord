@@ -112,8 +112,9 @@ function Description() {
 
 /** Solcord PC's warning on a plugin whose work Discord can see and punish */
 function BanRisk({ reason }: { reason: string; }) {
+    const warningIcon = findAssetId("WarningIcon");
     return <View style={{ flexDirection: "row", gap: 8, alignItems: "flex-start" }}>
-        <Image source={findAssetId("WarningIcon")} style={{ width: 16, height: 16, marginTop: 2, tintColor: "#F0B232" }} />
+        {warningIcon != null && <Image source={warningIcon} style={{ width: 16, height: 16, marginTop: 2, tintColor: "#F0B232" }} />}
         <Text variant="text-sm/medium" color="text-feedback-warning" style={{ flexShrink: 1 }}>
             {`${t(BAN_RISK_LEAD)} ${t(reason)}`}
         </Text>

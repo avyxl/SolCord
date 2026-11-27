@@ -34,6 +34,7 @@
           set -euo pipefail
           bun install --ignore-scripts
           node scripts/test.mjs
+          node node_modules/typescript/bin/tsc --noEmit -p .
           SOLCORD_BUILD_WASM=1 node scripts/build.mjs --release-branch main --build-minify --builds-branch builds-mobile
       -
         "uses": "actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f"
@@ -55,7 +56,7 @@
         "run": |
           set -euo pipefail
           export PATH="$(brew --prefix make)/libexec/gnubin:$PATH"
-          make package SOLCORD_REQUIRE_SIGNED=1
+          make package SOLCORD_REQUIRE_SIGNED=1 SOLCORD_BUNDLED_SEQUENCE="$(git show -s --format=%ct HEAD)"
           mkdir -p out
           cp packages/*.deb out/
           cp "$(find .theos/_ -name Solcord.dylib | head -n 1)" out/Solcord.dylib

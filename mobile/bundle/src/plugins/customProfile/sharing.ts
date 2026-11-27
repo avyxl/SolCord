@@ -37,7 +37,7 @@ const PASSIVE_SPREAD = 3000;
 /** Between pages of the channel, to stay well inside Discord's limits */
 const PAGE_DELAY = 500;
 /** One read never goes through more pages than this, whatever the channel answers */
-const MAX_PAGES = 1000;
+const MAX_PAGES = 10;
 /** An upload that takes longer than this is given up on; the rest of the profile is shared without the picture */
 const UPLOAD_TIMEOUT = 60_000;
 /** Quiet and plain: no notification, no link previews */
@@ -103,7 +103,7 @@ let offer: ((myId: string) => void) | undefined;
 
 let cacheBackend: StorageBackend | undefined;
 let publishedBackend: StorageBackend | undefined;
-const cacheStore = () => cacheBackend ??= createMMKVBackend("SOLCORD_CUSTOM_PROFILE_SHARED", {});
+const cacheStore = () => cacheBackend ??= createMMKVBackend("SOLCORD_CUSTOM_PROFILE_SHARED_V2", {});
 const publishedStore = () => publishedBackend ??= createMMKVBackend("SOLCORD_CUSTOM_PROFILE_PUBLISHED", { accounts: {} });
 
 // One write at a time, each with what's current when it runs
@@ -203,7 +203,8 @@ export const isMessageId = (id: unknown, now = Date.now()): id is string =>
 function takeMessage(message: any, target = cache): boolean {
     const author = message?.author?.id;
     const id = message?.id;
-    if (typeof author !== "string" || !SNOWFLAKE.test(author) || !isMessageId(id) || typeof message.content !== "string") return false;
+    if (message?.webhook_id || message?.author?.bot || message?.channel_id && message.channel_id !== PROFILES_CHANNEL_ID) return false;
+    if (typeof author !== "string" || !/^\d{16,22}$/.test(author) || !isMessageId(id) || typeof message.content !== "string") return false;
     if (target.newest == null || newer(id, target.newest)) target.newest = id;
 
     const current = entryOf(target, author);

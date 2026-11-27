@@ -1,11 +1,11 @@
 {
-    "name": "@revenge-mod/revenge",
+    "name": "@solcord/mobile",
     "exports": {
         "types": "./dist/types/index.d.ts"
     },
     "author": {
-        "name": "Revenge Team",
-        "url": "https://github.com/revenge-mod"
+        "name": "avyxl",
+        "url": "https://avyxl.github.io/portfolio/"
     },
     "scripts": {
         "build": "node scripts/build.mjs",
@@ -66,5 +66,6 @@
     ],
     "overrides": {
         "devalue": "5.9.4"
-    }
+    },
+    "version": "1.2.0"
 }

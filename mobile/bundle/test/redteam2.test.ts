@@ -40,7 +40,7 @@ describe("what a shared profile may carry", () => {
     });
 
     test("a picture link isn't absurdly long, and only points at Discord", () => {
-        expect(read({ bio: "ok", avatar: `https://cdn.discordapp.com/a/${"x".repeat(2000)}` })!.avatar).toBeUndefined();
+        expect(read({ bio: "ok", avatar: `https://cdn.discordapp.com/a/${"x".repeat(1100)}` })!.avatar).toBeUndefined();
         expect(read({ avatar: "https://cdn.discordapp.com/a/b.png" })!.avatar).toBe("https://cdn.discordapp.com/a/b.png");
     });
 
@@ -52,7 +52,7 @@ describe("what a shared profile may carry", () => {
     test("what writeProfileMessage sends is only what a reader would keep", () => {
         // A profile with a nameplate Discord can't read and a bad decoration, as a restored backup might hold
         const written = format.writeProfileMessage({ bio: "ok", decorationAsset: "..", displayNameStyles: { fontId: 1, effectId: 1, colors: [] } } as any);
-        const back = JSON.parse(written.content.slice("ecp1 ".length));
+        const back = JSON.parse(written.content.slice(format.PREFIX.length)).data;
         expect(back.decorationAsset).toBeUndefined();
         expect(back.displayNameStyles).toBeUndefined();
         expect(back.bio).toBe("ok");

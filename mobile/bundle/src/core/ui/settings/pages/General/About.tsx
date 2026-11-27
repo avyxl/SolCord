@@ -1,5 +1,5 @@
 import { Strings } from "@core/i18n";
-import { SolcordIcon } from "@core/ui/settings";
+import { SOLCORD_LOGO_SOURCE } from "@core/ui/settings/Logo";
 import Version from "@core/ui/settings/pages/General/Version";
 import { useProxy } from "@core/vendetta/storage";
 import { getDebugInfo } from "@lib/api/debug";
@@ -16,7 +16,7 @@ export default function About() {
         {
             label: Strings.BUNNY,
             version: debugInfo.bunny.version,
-            icon: { uri: SolcordIcon },
+            icon: SOLCORD_LOGO_SOURCE,
         },
         {
             label: "Discord",

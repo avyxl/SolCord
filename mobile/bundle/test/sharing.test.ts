@@ -109,7 +109,7 @@ async function wait(ms: number, step = 100) {
 }
 
 const A = "100000000000000001", B = "100000000000000002", C = "100000000000000003", D = "100000000000000004", E = "100000000000000005";
-const profile = (data: Record<string, unknown>) => `ecp1 ${JSON.stringify(data)}`;
+const profile = (data: Record<string, unknown>) => `solcord2 ${JSON.stringify({ kind: "profile", data })}`;
 const changed: string[][] = [];
 let offered: string[] = [];
 let mine: { id: string; data: any; } | null = null;
@@ -143,7 +143,7 @@ describe("reading the channel", () => {
         expect(sharing.getSharedProfile(A)).toBeNull();
         await wait(16_000);
         expect(sharing.getSharedProfile(A)).toEqual({ globalName: "new A", pronouns: "they" });
-        expect(sharing.getSharedProfile(B)).toEqual({ bio: "B's bio" });
+        expect(sharing.getSharedProfile(B)).toEqual({ bio: "B's bio", createdAt: "2016-01-01" });
         expect(sharing.getSharedProfile(C)).toBeNull();
         expect(sharing.getSharedProfile(D)).toBeNull();
         // Pictures only from Discord's own servers: a link anywhere else would tell a stranger who looked
@@ -163,11 +163,11 @@ describe("reading the channel", () => {
     test("a message id from the future can't hold a profile in place", async () => {
         const future = String((BigInt(Date.now() + 10 * 86_400_000 - DISCORD_EPOCH) << 22n));
         dispatch("MESSAGE_CREATE", { channelId: CHANNEL, message: { id: future, author: { id: B }, content: profile({ bio: "forever" }), attachments: [] } });
-        expect(sharing.getSharedProfile(B)).toEqual({ bio: "B's bio" });
+        expect(sharing.getSharedProfile(B)).toEqual({ bio: "B's bio", createdAt: "2016-01-01" });
     });
 
     test("an emptied profile from Solcord PC takes its author's profile back, even with the older message still there", async () => {
-        const message = add(A, "ecp1 {}");
+        const message = add(A, 'solcord2 {"kind":"profile","data":null}');
         dispatch("MESSAGE_CREATE", { channelId: CHANNEL, message });
         expect(sharing.getSharedProfile(A)).toBeNull();
         // The whole channel read again (twelve hours on), newest first: the older profile below doesn't come back
@@ -207,8 +207,8 @@ describe("sharing this account's profile", () => {
         // No notification and no link previews, and nobody pinged whatever the profile says
         expect(post.body.flags).toBe((1 << 2) | (1 << 12));
         expect(post.body.allowed_mentions).toEqual({ parse: [] });
-        expect(post.body.content).toBe(profile({ globalName: "Me", bio: "hi" }));
-        expect(sharing.getSharedProfile(me)).toEqual({ globalName: "Me", bio: "hi" });
+        expect(post.body.content).toBe(profile({ globalName: "Me", bio: "hi", createdAt: "2015-05-05" }));
+        expect(sharing.getSharedProfile(me)).toEqual({ globalName: "Me", bio: "hi", createdAt: "2015-05-05" });
 
         mine.data = { globalName: "Me again" };
         expect(await sharing.publishProfile(me, mine.data)).toBe("published");
@@ -220,7 +220,7 @@ describe("sharing this account's profile", () => {
         mine = { id: me, data: null };
         expect(await sharing.publishProfile(me, null)).toBe("published");
         expect(deletes).toContain(before);
-        expect(myMessages().map(m => m.content)).toEqual(["ecp1 {}"]);
+        expect(myMessages().map(m => m.content)).toEqual(['solcord2 {"kind":"profile","data":null}']);
         expect(sharing.getSharedProfile(me)).toBeNull();
         // Sharing again clears the empty profile away
         mine = { id: me, data: { bio: "back" } };
@@ -330,7 +330,7 @@ describe("taking a profile back when Discord can't be reached", () => {
         offline = false;
         dispatch("CONNECTION_OPEN", {});
         await wait(21_000);
-        expect(myMessages().map(m => m.content)).toEqual(["ecp1 {}"]);
+        expect(myMessages().map(m => m.content)).toEqual(['solcord2 {"kind":"profile","data":null}']);
         expect(sharing.getSharedProfile(me)).toBeNull();
     });
 
@@ -341,14 +341,14 @@ describe("taking a profile back when Discord can't be reached", () => {
         failDeletes = true;
         mine = { id: me, data: null };
         expect(await sharing.publishProfile(me, null)).toBe("published");
-        expect(myMessages().map(m => m.content)).toEqual([profile({ bio: "again" }), "ecp1 {}"]);
+        expect(myMessages().map(m => m.content)).toEqual([profile({ bio: "again" }), 'solcord2 {"kind":"profile","data":null}']);
         expect(sharing.getSharedProfile(me)).toBeNull();
         expect(JSON.parse(storage.get("SOLCORD_CUSTOM_PROFILE_PUBLISHED")!).accounts[me].o).toEqual([old]);
         failDeletes = false;
         const count = posts.length;
         dispatch("CONNECTION_OPEN", {});
         await wait(21_000);
-        expect(myMessages().map(m => m.content)).toEqual(["ecp1 {}"]);
+        expect(myMessages().map(m => m.content)).toEqual(['solcord2 {"kind":"profile","data":null}']);
         expect(posts.length).toBe(count);
         expect(JSON.parse(storage.get("SOLCORD_CUSTOM_PROFILE_PUBLISHED")!).accounts[me].o).toBeUndefined();
     });

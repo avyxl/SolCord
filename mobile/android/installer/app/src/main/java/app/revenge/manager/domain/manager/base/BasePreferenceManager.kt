@@ -13,21 +13,21 @@ abstract class BasePreferenceManager(
     private val prefs: SharedPreferences
 ) {
     protected fun getString(key: String, defaultValue: String?) =
-        prefs.getString(key, defaultValue)!!
+        try { prefs.getString(key, defaultValue) ?: defaultValue.orEmpty() } catch (_: ClassCastException) { defaultValue.orEmpty() }
 
-    private fun getBoolean(key: String, defaultValue: Boolean) = prefs.getBoolean(key, defaultValue)
-    private fun getInt(key: String, defaultValue: Int) = prefs.getInt(key, defaultValue)
-    private fun getFloat(key: String, defaultValue: Float) = prefs.getFloat(key, defaultValue)
+    private fun getBoolean(key: String, defaultValue: Boolean) = try { prefs.getBoolean(key, defaultValue) } catch (_: ClassCastException) { defaultValue }
+    private fun getInt(key: String, defaultValue: Int) = try { prefs.getInt(key, defaultValue) } catch (_: ClassCastException) { defaultValue }
+    private fun getFloat(key: String, defaultValue: Float) = try { prefs.getFloat(key, defaultValue) } catch (_: ClassCastException) { defaultValue }
     private fun getColor(key: String, defaultValue: Color): Color {
-        val c = prefs.getString(key, null)
-        return if (c == null) defaultValue else Color(c.toULong())
+        val c = try { prefs.getString(key, null)?.toULongOrNull() } catch (_: ClassCastException) { null }
+        return if (c == null) defaultValue else Color(c)
     }
 
     private fun getFile(key: String, defaultValue: File) =
         File(getString(key, defaultValue.absolutePath))
 
     protected inline fun <reified E : Enum<E>> getEnum(key: String, defaultValue: E) =
-        enumValueOf<E>(getString(key, defaultValue.name))
+        enumValues<E>().firstOrNull { it.name == getString(key, defaultValue.name) } ?: defaultValue
 
     protected fun putString(key: String, value: String?) = prefs.edit { putString(key, value) }
     private fun putBoolean(key: String, value: Boolean) = prefs.edit { putBoolean(key, value) }

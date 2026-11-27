@@ -19,6 +19,8 @@ Solcord_LDFLAGS = -undefined dynamic_lookup
 # a published bundle that has no signed release.
 SOLCORD_RELEASE_KEY ?= $(shell cat $(THEOS_PROJECT_DIR)/../bundle/release-key.pub)
 Solcord_CFLAGS += -DSOLCORD_RELEASE_KEY='@"$(SOLCORD_RELEASE_KEY)"'
+SOLCORD_BUNDLED_SEQUENCE ?= 0
+Solcord_CFLAGS += -DSOLCORD_BUNDLED_SEQUENCE=$(SOLCORD_BUNDLED_SEQUENCE)
 ifdef SOLCORD_REQUIRE_SIGNED
 Solcord_CFLAGS += -DSOLCORD_REQUIRE_SIGNED=1
 endif

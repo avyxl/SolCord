@@ -213,6 +213,7 @@ const toHex = (n?: number) => n != null ? `#${n.toString(16).padStart(6, "0")}` 
 function ColorField({ label, value, placeholder, onChange }: { label: string; value?: number; placeholder: string; onChange: (v?: number) => void; }) {
     const [text, setText] = useState(toHex(value));
     useEffect(() => setText(toHex(value)), [value]);
+    const pencilIcon = findAssetId("PencilIcon");
     const hex = text.replace("#", "");
     const valid = !text || text === "#" || /^[0-9a-f]{6}$/i.test(hex);
     return <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
@@ -229,7 +230,7 @@ function ColorField({ label, value, placeholder, onChange }: { label: string; va
             }}
             style={{ width: 44, height: 44, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: toHex(value) || placeholder.split(" ")[0] }}
         >
-            <Image source={findAssetId("PencilIcon")} style={{ width: 18, height: 18, tintColor: "#ffffff" }} />
+            {pencilIcon != null && <Image source={pencilIcon} style={{ width: 18, height: 18, tintColor: "#ffffff" }} />}
         </Pressable>
         <View style={{ flex: 1 }}>
             <TextInput
@@ -271,6 +272,7 @@ function DateField({ label, value, onChange }: { label: string; value: string; o
 
 function PresetsBar({ accountId, currentData, onLoad }: { accountId: string; currentData: CustomProfileData; onLoad: (data: CustomProfileData) => void; }) {
     const styles = useStyles();
+    const bookmarkIcon = findAssetId("BookmarkIcon");
     const [presets, setLocal] = useState<SavedPreset[]>(() => presetsOf(accountId));
     useEffect(() => setLocal(presetsOf(accountId)), [accountId]);
 
@@ -289,7 +291,7 @@ function PresetsBar({ accountId, currentData, onLoad }: { accountId: string; cur
         {!presets.length && <Text variant="text-xs/medium" color="text-muted">{t("No saved presets")}</Text>}
         {presets.map((p, i) => <View key={`${i}-${p.name}`} style={[styles.pill, { paddingRight: 6 }]}>
             <Pressable onPress={() => onLoad({ ...p.data })} accessibilityHint={t("Click to load")} style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-                <Image source={findAssetId("BookmarkIcon")} style={{ width: 13, height: 13, tintColor: semanticColorOf("ICON_DEFAULT", "INTERACTIVE_ICON_DEFAULT") }} />
+                {bookmarkIcon != null && <Image source={bookmarkIcon} style={{ width: 13, height: 13, tintColor: semanticColorOf("ICON_DEFAULT", "INTERACTIVE_ICON_DEFAULT") }} />}
                 <Text variant="text-xs/semibold" color="text-default">{p.name}</Text>
             </Pressable>
             <Pressable onPress={() => update(presets.filter((_, j) => j !== i))} accessibilityLabel={t("Delete preset")} hitSlop={8} style={{ paddingHorizontal: 4 }}>

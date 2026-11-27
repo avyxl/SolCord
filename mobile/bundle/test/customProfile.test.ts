@@ -22,7 +22,7 @@ describe("the fields Solcord PC has", () => {
         const { content, fits } = format.writeProfileMessage({ bio: "hi", email: "a@b.c", createdAt: "2016-01-01", ...pcFields });
         expect(fits).toBe(true);
         const back = format.readProfileMessage(content);
-        expect(back).toEqual({ bio: "hi", ...pcFields });
+        expect(back).toEqual({ bio: "hi", createdAt: "2016-01-01", ...pcFields });
     });
 
     test("a profile with only one of them is a profile", () => {
