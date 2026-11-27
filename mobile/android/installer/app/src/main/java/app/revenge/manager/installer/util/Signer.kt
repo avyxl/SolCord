@@ -60,19 +60,13 @@ object Signer : KoinComponent {
     /** Writes a new key to [out] whole or not at all: written next to it, synced, then renamed into place */
     private fun newKeystore(out: File) {
         val key = createKey()
-        val temp = File(out.path + ".tmp")
 
         with(KeyStore.getInstance(KeyStore.getDefaultType())) {
             load(null, password)
             setKeyEntry("alias", key.privateKey, password, arrayOf<Certificate>(key.publicKey))
-            temp.outputStream().use { stream ->
+            persistNewKeystore(out) { stream ->
                 store(stream, password)
-                stream.fd.sync()
             }
-        }
-        if (!temp.renameTo(out)) {
-            temp.delete()
-            error("Unable to save the signing key")
         }
     }
 

@@ -76,4 +76,4 @@ adb shell cp /data/local/tmp/solcord-prefs.xml "/data/user/0/$pkg/shared_prefs/p
 adb shell chown "$uid:$uid" "/data/user/0/$pkg/shared_prefs" "/data/user/0/$pkg/shared_prefs/prefs.xml"
 adb shell restorecon -R "/data/user/0/$pkg/shared_prefs"
 launch restored-preferences
-echo 'PASS: first launch, offline cold start and legacy preference recovery' | tee results/summary.txt
+echo 'PASS: first launch, offline cold start and legacy preference recovery' | tee -a results/summary.txt

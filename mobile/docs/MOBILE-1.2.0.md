@@ -16,6 +16,8 @@ Both native loaders enforce a release baseline compiled into the app. A saved si
 
 Android installer preference reads fall back when a restored value has a wrong type or an enum value removed by a newer version. Notification permission is requested on Android 13 and later.
 
+The full installation test also exposed a first-install signing failure: a keystore provider can close its output before the installer synchronizes the file. Key serialization now uses a memory buffer, followed by a separately owned file write, sync and commit. Existing signing keys are preserved. Regression tests cover providers closing their stream, serialization failure and refusing to replace an existing key.
+
 ## Install and update
 
 Android: open `SolcordInstaller-Android-1.2.0.apk`, then run its install/update flow. Updating the installer alone does not replace the loader already patched into Discord. Android 9 or newer is required. The installer and installed Solcord are different apps.
