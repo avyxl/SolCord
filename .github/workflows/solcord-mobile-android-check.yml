@@ -17,6 +17,15 @@ jobs:
         api: [35]
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - name: Download a pinned Discord for the installed-app scenario
+        run: |
+          set -euo pipefail
+          mkdir discord
+          for split in base config.x86_64 config.en config.xxhdpi; do
+            curl -4 -fsSL --retry 5 --retry-all-errors --retry-delay 3 --connect-timeout 20 --max-time 180 \
+              "https://tracker.vendetta.rocks/tracker/download/355010/$split" -o "discord/$split.apk"
+          done
+          sha256sum discord/*.apk > discord/SHA256SUMS
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules

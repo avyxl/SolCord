@@ -5,6 +5,7 @@ mkdir -p results
 pkg=com.solcord.installer.next
 trap 'adb logcat -d > results/logcat.txt 2>&1 || true' EXIT
 adb install -r SolcordInstaller.apk
+adb install-multiple -r ../discord/*.apk
 api=$(adb shell getprop ro.build.version.sdk | tr -d '\r')
 if [ "$api" -ge 33 ]; then
   adb shell pm grant "$pkg" android.permission.POST_NOTIFICATIONS
@@ -33,7 +34,7 @@ if [ "$api" -ge 35 ]; then
   adb shell dumpsys deviceidle whitelist +"$pkg"
   adb logcat -c
   adb shell monkey -p "$pkg" -c android.intent.category.LAUNCHER 1
-  python3 ui.py install download
+  python3 ui.py install installed
   adb logcat -d > results/install-flow.log
   adb shell pm list packages | grep -qx 'package:com.solcord.next'
   adb shell am force-stop "$pkg"
